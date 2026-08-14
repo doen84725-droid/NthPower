@@ -379,8 +379,9 @@
       border: 1px solid #cbd5e0;
       font-size: 0.95rem;
       outline: none;
+      background: #fff;
     }
-    .form-group input:focus, .form-group textarea:focus {
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
       border-color: var(--primary);
     }
   </style>
@@ -504,14 +505,31 @@
           <label>聯絡電話 *</label>
           <input type="tel" id="custPhone" required placeholder="09xx-xxx-xxx" />
         </div>
+        
+        <!-- 取餐時間 (現在 / 稍後) -->
         <div class="form-group">
           <label>預計取餐時間 *</label>
-          <input type="time" id="custTime" required />
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <button type="button" id="btnPickupNow" class="chip selected" style="flex: 1; text-align: center;" onclick="setPickupTimeType('now')">⚡ 現在取餐 (現場現做)</button>
+            <button type="button" id="btnPickupLater" class="chip" style="flex: 1; text-align: center;" onclick="setPickupTimeType('later')">🕒 稍後取餐 (預約)</button>
+          </div>
+          <input type="time" id="custTime" style="display: none;" />
         </div>
+
+        <!-- 付款方式 -->
+        <div class="form-group">
+          <label>付款方式 *</label>
+          <select id="custPayment" required>
+            <option value="手機支付 (請掃桌面QR CODE支付並出示)">手機支付 (請掃桌面QR CODE支付並出示)</option>
+            <option value="現金 (請至櫃台付現)">現金 (請至櫃台付現)</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>備註需求</label>
           <textarea id="custNotes" rows="2" placeholder="例如：少冰、不要吸管..."></textarea>
         </div>
+        
         <button type="submit" id="btnSubmitOrder" class="btn-modal-submit">確認送出訂單 ($<span id="checkoutTotalAmount">0</span>)</button>
       </form>
     </div>
@@ -552,64 +570,105 @@
     ];
 
     /* =========================
-       2. 購物車與狀態變數
+       2. 狀態與全域變數
     ========================= */
     let cart = [];
     let currentCustomizingItem = null;
     let modalQty = 1;
+    let pickupTimeType = 'now'; // 預設現在取餐
+    let stockStatus = {};       // 試算表庫存狀態
 
     // ★★★ 在此填入你的 Google Apps Script 部署網址 ★★★
     const GAS_WEBAPP_URL = "你的_GOOGLE_APPS_SCRIPT_網址";
 
     /* =========================
-       3. 頁面初始化渲染
+       3. 頁面初始化與讀取庫存
     ========================= */
     window.addEventListener('DOMContentLoaded', () => {
+      fetchStockAndRender();
+    });
+
+    function fetchStockAndRender() {
+      if (!GAS_WEBAPP_URL || GAS_WEBAPP_URL === "你的_GOOGLE_APPS_SCRIPT_網址") {
+        renderAllMenus();
+        return;
+      }
+      
+      fetch(GAS_WEBAPP_URL)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            stockStatus = res.data;
+          }
+          renderAllMenus();
+        })
+        .catch(err => {
+          console.warn("無法取得庫存狀態，使用預設全部供應", err);
+          renderAllMenus();
+        });
+    }
+
+    function renderAllMenus() {
       renderYogurtItems();
       renderTeaItems();
       renderEnergyItems();
-    });
+    }
 
     function renderYogurtItems() {
       const container = document.getElementById('yogurt-list');
-      container.innerHTML = YOGURT_ITEMS.map(item => `
-        <div class="menu-card">
-          <div class="item-info">
-            <div class="item-name">${item.name}</div>
-            <div class="item-desc">${item.desc}</div>
-            <div class="item-price">$${item.price}</div>
+      container.innerHTML = YOGURT_ITEMS.map(item => {
+        const isSoldOut = stockStatus[item.name] === false;
+        return `
+          <div class="menu-card" style="${isSoldOut ? 'opacity: 0.6;' : ''}">
+            <div class="item-info">
+              <div class="item-name">${item.name} ${isSoldOut ? '<span style="color:#e53e3e; font-size:0.8rem;">(已售完)</span>' : ''}</div>
+              <div class="item-desc">${item.desc}</div>
+              <div class="item-price">$${item.price}</div>
+            </div>
+            <button class="btn-add" ${isSoldOut ? 'disabled style="background:#e2e8f0; color:#a0aec0; border-color:#cbd5e0; cursor:not-allowed;"' : ''} onclick="openOptionModal('yogurt', '${item.id}')">
+              ${isSoldOut ? '已售完' : '加點 ＋'}
+            </button>
           </div>
-          <button class="btn-add" onclick="openOptionModal('yogurt', '${item.id}')">加點 ＋</button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderTeaItems() {
       const container = document.getElementById('tea-list');
-      container.innerHTML = TEA_ITEMS.map(item => `
-        <div class="menu-card">
-          <div class="item-info">
-            <div class="item-name">${item.name}</div>
-            <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能健康茶飲'}</div>
-            <div class="item-price">$${item.price}</div>
+      container.innerHTML = TEA_ITEMS.map(item => {
+        const isSoldOut = stockStatus[item.name] === false;
+        return `
+          <div class="menu-card" style="${isSoldOut ? 'opacity: 0.6;' : ''}">
+            <div class="item-info">
+              <div class="item-name">${item.name} ${isSoldOut ? '<span style="color:#e53e3e; font-size:0.8rem;">(已售完)</span>' : ''}</div>
+              <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能健康茶飲'}</div>
+              <div class="item-price">$${item.price}</div>
+            </div>
+            <button class="btn-add" ${isSoldOut ? 'disabled style="background:#e2e8f0; color:#a0aec0; border-color:#cbd5e0; cursor:not-allowed;"' : ''} onclick="openOptionModal('tea', '${item.id}')">
+              ${isSoldOut ? '已售完' : '選擇 ＋'}
+            </button>
           </div>
-          <button class="btn-add" onclick="openOptionModal('tea', '${item.id}')">選擇 ＋</button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderEnergyItems() {
       const container = document.getElementById('energy-list');
-      container.innerHTML = ENERGY_ITEMS.map(item => `
-        <div class="menu-card">
-          <div class="item-info">
-            <div class="item-name">${item.name}</div>
-            <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能補給'}</div>
-            <div class="item-price">$${item.price}</div>
+      container.innerHTML = ENERGY_ITEMS.map(item => {
+        const isSoldOut = stockStatus[item.name] === false;
+        return `
+          <div class="menu-card" style="${isSoldOut ? 'opacity: 0.6;' : ''}">
+            <div class="item-info">
+              <div class="item-name">${item.name} ${isSoldOut ? '<span style="color:#e53e3e; font-size:0.8rem;">(已售完)</span>' : ''}</div>
+              <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能補給'}</div>
+              <div class="item-price">$${item.price}</div>
+            </div>
+            <button class="btn-add" ${isSoldOut ? 'disabled style="background:#e2e8f0; color:#a0aec0; border-color:#cbd5e0; cursor:not-allowed;"' : ''} onclick="openOptionModal('energy', '${item.id}')">
+              ${isSoldOut ? '已售完' : '選擇 ＋'}
+            </button>
           </div>
-          <button class="btn-add" onclick="openOptionModal('energy', '${item.id}')">選擇 ＋</button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     /* =========================
@@ -624,29 +683,37 @@
       if (type === 'smoothies') {
         currentCustomizingItem = { name: '經典果昔', basePrice: 100, type: 'smoothies' };
         document.getElementById('optModalTitle').innerText = '經典果昔 ($100)';
+        
+        const flavors = ['香草', '草莓', '巧克力', '芒果', '咖啡', '奶香曲奇', '薄荷巧克力'];
         modalBody.innerHTML = `
           <div class="option-group">
             <label class="option-label">選擇口味 (必選)</label>
             <div class="option-chips" id="flavorChips">
-              ${['香草', '草莓', '巧克力', '芒果', '咖啡', '奶香曲奇', '薄荷巧克力'].map((f, i) => 
-                `<button type="button" class="chip ${i === 0 ? 'selected' : ''}" onclick="selectSingleChip(this)">${f}</button>`
-              ).join('')}
+              ${flavors.map(f => {
+                const isAvail = stockStatus[f] !== false;
+                return `<button type="button" class="chip" ${!isAvail ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">${f}${!isAvail ? '(缺)' : ''}</button>`;
+              }).join('')}
             </div>
           </div>
           <div class="option-group">
             <label class="option-label">基底配料 (二選一)</label>
             <div class="option-chips" id="baseChips">
-              <button type="button" class="chip selected" onclick="selectSingleChip(this)">穀片</button>
-              <button type="button" class="chip" onclick="selectSingleChip(this)">寒天波波</button>
+              <button type="button" class="chip" ${stockStatus['穀片'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">穀片</button>
+              <button type="button" class="chip" ${stockStatus['寒天波波'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">寒天波波</button>
             </div>
           </div>
           ${renderAddonsHtml()}
         `;
+        // 預設選中第一個可選的口味與配料
+        autoSelectFirstChip('#flavorChips');
+        autoSelectFirstChip('#baseChips');
+
       } else if (type === 'yogurt') {
         const item = YOGURT_ITEMS.find(i => i.id === itemId);
-        currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'yogurt', desc: item.desc };
+        currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'yogurt' };
         document.getElementById('optModalTitle').innerText = `${item.name} ($${item.price})`;
         modalBody.innerHTML = renderAddonsHtml();
+
       } else if (type === 'tea') {
         const item = TEA_ITEMS.find(i => i.id === itemId);
         currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'tea' };
@@ -665,13 +732,18 @@
             <div class="option-group">
               <label class="option-label">口味</label>
               <div class="option-chips" id="flavorChips">
-                ${item.flavors.map((f, i) => `<button type="button" class="chip ${i === 0 ? 'selected' : ''}" onclick="selectSingleChip(this)">${f}</button>`).join('')}
+                ${item.flavors.map(f => {
+                  const isAvail = stockStatus[f] !== false;
+                  return `<button type="button" class="chip" ${!isAvail ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">${f}${!isAvail ? '(缺)' : ''}</button>`;
+                }).join('')}
               </div>
             </div>
           `;
         }
         html += renderAddonsHtml();
         modalBody.innerHTML = html;
+        if (item.flavors.length) autoSelectFirstChip('#flavorChips');
+
       } else if (type === 'energy') {
         const item = ENERGY_ITEMS.find(i => i.id === itemId);
         currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'energy' };
@@ -693,13 +765,17 @@
             <div class="option-group">
               <label class="option-label">口味</label>
               <div class="option-chips" id="flavorChips">
-                ${item.flavors.map((f, i) => `<button type="button" class="chip ${i === 0 ? 'selected' : ''}" onclick="selectSingleChip(this)">${f}</button>`).join('')}
+                ${item.flavors.map(f => {
+                  const isAvail = stockStatus[f] !== false;
+                  return `<button type="button" class="chip" ${!isAvail ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">${f}${!isAvail ? '(缺)' : ''}</button>`;
+                }).join('')}
               </div>
             </div>
           `;
         }
         html += renderAddonsHtml();
         modalBody.innerHTML = html;
+        if (item.flavors.length) autoSelectFirstChip('#flavorChips');
       }
 
       openModal('optionModal');
@@ -710,21 +786,35 @@
         <div class="option-group">
           <label class="option-label">加料與需求 (可複選)</label>
           <div class="option-chips" id="addonChips">
-            ${GLOBAL_ADDONS.map(addon => `
-              <button type="button" class="chip" data-price="${addon.price}" onclick="toggleMultiChip(this)">${addon.name} (+$${addon.price})</button>
-            `).join('')}
+            ${GLOBAL_ADDONS.map(addon => {
+              const isAvail = stockStatus[addon.name] !== false;
+              return `
+                <button type="button" class="chip" data-price="${addon.price}" 
+                  ${!isAvail ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} 
+                  onclick="toggleMultiChip(this)">
+                  ${addon.name} ${!isAvail ? '(已售完)' : `(+$${addon.price})`}
+                </button>
+              `;
+            }).join('')}
           </div>
         </div>
       `;
     }
 
+    function autoSelectFirstChip(containerSelector) {
+      const firstAvailable = document.querySelector(`${containerSelector} .chip:not([disabled])`);
+      if (firstAvailable) firstAvailable.classList.add('selected');
+    }
+
     function selectSingleChip(el) {
+      if (el.disabled) return;
       const parent = el.parentElement;
       parent.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
       el.classList.add('selected');
     }
 
     function toggleMultiChip(el) {
+      if (el.disabled) return;
       el.classList.toggle('selected');
     }
 
@@ -738,7 +828,7 @@
       let extraPrice = 0;
 
       const flavorChip = document.querySelector('#flavorChips .chip.selected');
-      if (flavorChip) selectedOpts.push(`口味: ${flavorChip.innerText}`);
+      if (flavorChip) selectedOpts.push(`口味: ${flavorChip.innerText.replace('(缺)', '')}`);
 
       const baseChip = document.querySelector('#baseChips .chip.selected');
       if (baseChip) selectedOpts.push(`配料: ${baseChip.innerText}`);
@@ -767,7 +857,7 @@
     }
 
     /* =========================
-       5. 購物車計算與渲染
+       5. 購物車計算與更新
     ========================= */
     function updateCartUI() {
       const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -778,7 +868,6 @@
       document.getElementById('checkoutTotalAmount').innerText = totalPrice;
       document.getElementById('btnProceed').disabled = totalQty === 0;
 
-      // 渲染購物車明細
       const listContainer = document.getElementById('cartDetailsList');
       if (cart.length === 0) {
         listContainer.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">購物車目前是空的</p>';
@@ -803,7 +892,29 @@
     }
 
     /* =========================
-       6. 訂單送出 (串接 GAS)
+       6. 取餐時間切換
+    ========================= */
+    function setPickupTimeType(type) {
+      pickupTimeType = type;
+      const btnNow = document.getElementById('btnPickupNow');
+      const btnLater = document.getElementById('btnPickupLater');
+      const timeInput = document.getElementById('custTime');
+
+      if (type === 'now') {
+        btnNow.classList.add('selected');
+        btnLater.classList.remove('selected');
+        timeInput.style.display = 'none';
+        timeInput.removeAttribute('required');
+      } else {
+        btnLater.classList.add('selected');
+        btnNow.classList.remove('selected');
+        timeInput.style.display = 'block';
+        timeInput.setAttribute('required', 'required');
+      }
+    }
+
+    /* =========================
+       7. 訂單送出 (串接 GAS)
     ========================= */
     function handleOrderSubmit(e) {
       e.preventDefault();
@@ -813,15 +924,17 @@
       submitBtn.disabled = true;
       submitBtn.innerText = '訂單傳送中...';
 
-      // 組成餐點明細文字
       const orderDetailsText = cart.map((item, idx) => 
         `${idx + 1}. ${item.name} x ${item.qty}杯 ($${item.total})\n   └ ${item.options || '無特殊需求'}`
       ).join('\n');
 
+      const pickupTimeVal = pickupTimeType === 'now' ? '現在 (現場即取)' : document.getElementById('custTime').value;
+
       const payload = {
         name: document.getElementById('custName').value,
         phone: document.getElementById('custPhone').value,
-        pickupTime: document.getElementById('custTime').value,
+        pickupTime: pickupTimeVal,
+        paymentMethod: document.getElementById('custPayment').value,
         orderDetails: orderDetailsText,
         totalPrice: cart.reduce((sum, item) => sum + item.total, 0),
         notes: document.getElementById('custNotes').value
@@ -839,6 +952,7 @@
         updateCartUI();
         closeModal('checkoutModal');
         document.getElementById('orderForm').reset();
+        setPickupTimeType('now');
       })
       .catch(err => {
         console.error(err);
@@ -852,7 +966,7 @@
     }
 
     /* =========================
-       7. 視窗控制輔助工具
+       8. 視窗控制輔助工具
     ========================= */
     function openModal(id) { document.getElementById(id).classList.add('active'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
