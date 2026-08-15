@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>N次方 訂單監控台</title>
+</head>
+<body>
+    <h1>🔔 訂單監控台</h1>
+    <!-- 音量控制 -->
+    <label>音量：</label>
+    <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
+    <p>點擊頁面任意處以啟用語音與鈴聲權限</p>
+    <div id="order-container"></div>
+
+    <script>
+        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/你的網址/exec";
+        
+        // 語音播報設定
+        function speak(text) {
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.volume = document.getElementById('volume').value; // 取得自訂音量
+            msg.lang = 'zh-TW'; // 設定繁體中文
+            window.speechSynthesis.speak(msg);
+        }
+
+        // 播放提示音
+        function playAlert() {
+            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+            audio.volume = document.getElementById('volume').value;
+            audio.play();
+        }
+
+        function checkForNewOrders() {
+            fetch(GAS_WEBAPP_URL)
+                .then(res => res.json())
+                .then(data => {
+                    // 這裡執行響鈴與念出內容
+                    playAlert();
+                    speak("有新訂單！姓名是" + data.order.name); 
+                });
+        }
+
+        // 啟用互動權限
+        document.body.onclick = () => { console.log("權限已就緒"); };
+        setInterval(checkForNewOrders, 10000); 
+    </script>
+</body>
+</html>
