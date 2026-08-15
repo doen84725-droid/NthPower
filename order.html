@@ -778,7 +778,7 @@
           <div class="option-group">
             <label class="option-label">選擇口味 (必選 1 項)</label>
             <div class="option-chips" id="flavorChips">
-              ${flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">${f}${stockStatus[f] === false ? '(缺)' : ''}</button>`).join('')}
+              ${flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)"></button>`).join('')}
             </div>
           </div>
           <div class="option-group">
