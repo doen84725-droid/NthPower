@@ -1030,7 +1030,7 @@
       })
       .then(res => res.json())
       .then(data => {
-        // 儲存號碼牌資料在客人的手機瀏覽器
+        // 1. 儲存號碼牌資料到手機瀏覽器
         const ticketInfo = {
           orderNo: orderNo,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -1039,15 +1039,23 @@
         };
         localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
 
-        // 清空購物車與表單
+        // 2. 清空購物車與結帳表單
         cart = [];
         updateCartUI();
         document.getElementById('orderForm').reset();
         closeModal('checkoutModal');
 
-        // 顯示號碼牌按鈕與彈窗
+        // 3. 顯示右上角「我的號碼」按鈕，並立刻彈出大字號碼牌視窗
         document.getElementById('btnViewTicket').style.display = 'inline-flex';
-        openTicketModal();
+        
+        // 填入號碼與明細並顯示彈窗
+        document.getElementById('displayTicketNo').innerText = orderNo;
+        document.getElementById('ticketOrderDetails').innerHTML = `
+          <div><strong>下單時間：</strong>${ticketInfo.time}</div>
+          <div><strong>取餐時間：</strong>${ticketInfo.pickupTime}</div>
+          <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
+        `;
+        openModal('ticketModal');
       })
       .catch(err => {
         alert('訂單已送出（若提示異常請向櫃台出示）');
