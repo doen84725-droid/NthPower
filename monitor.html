@@ -1,25 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>N次方 訂單監控台</title>
+    <style>
+        body { font-family: 'Microsoft JhengHei', sans-serif; padding: 20px; background-color: #f4f4f9; text-align: center; }
+        .container { max-width: 600px; margin: auto; }
+        .order-card { background: white; padding: 20px; margin: 10px 0; border-left: 10px solid #d9534f; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: left; }
+        #volume-control { margin: 20px 0; }
+        .status-box { padding: 15px; background: #fff; border-radius: 8px; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-    <h1>🔔 訂單監控台</h1>
-    <!-- 音量控制 -->
-    <label>音量：</label>
-    <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
-    <p>點擊頁面任意處以啟用語音與鈴聲權限</p>
-    <div id="order-container"></div>
+    <div class="container">
+        <h1>🔔 訂單監控台</h1>
+        <div class="status-box">
+            <p>請點擊頁面任意處以啟用語音與鈴聲權限</p>
+            <div id="volume-control">
+                <label>音量：</label>
+                <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
+            </div>
+        </div>
+        <div id="order-container">等待新訂單中...</div>
+    </div>
 
     <script>
-        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/你的網址/exec";
-        
-        // 語音播報設定
-        function speak(text) {
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.volume = document.getElementById('volume').value; // 取得自訂音量
-            msg.lang = 'zh-TW'; // 設定繁體中文
+        // 你最新的 Apps Script 部署網址
+        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzUvxK3_6ZpIUC6-GWhu_A7rwWUvFuZwzLJTZlJe12WQA7Bfdh_kcYSM9EMTNx5rPPZ/exec"; 
+        let lastTimestamp = "";
+
+        // 語音播報（嚴格保護個資：絕對不念姓名與電話）
+        function speakOrder(details, price) {
+            const volume = document.getElementById('volume').value;
+            const textToSpeak = `有新訂單！內容是${details}，總金額${price}元。`;
+            const msg = new SpeechSynthesisUtterance(textToSpeak);
+            msg.volume = volume;
+            msg.lang = 'zh-TW';
             window.speechSynthesis.speak(msg);
         }
 
@@ -27,22 +44,39 @@
         function playAlert() {
             const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
             audio.volume = document.getElementById('volume').value;
-            audio.play();
+            audio.play().catch(e => console.log("等待互動權限"));
         }
 
+        // 檢查新訂單
         function checkForNewOrders() {
             fetch(GAS_WEBAPP_URL)
                 .then(res => res.json())
                 .then(data => {
-                    // 這裡執行響鈴與念出內容
-                    playAlert();
-                    speak("有新訂單！姓名是" + data.order.name); 
-                });
+                    if (data.order && data.order.time !== lastTimestamp) {
+                        lastTimestamp = data.order.time;
+                        
+                        // 更新畫面
+                        document.getElementById('order-container').innerHTML = `
+                            <div class="order-card">
+                                <h3>🕒 ${data.order.time}</h3>
+                                <p><strong>內容：</strong><br>${data.order.details}</p>
+                                <p><strong>總金額：</strong>${data.order.totalPrice} 元</p>
+                            </div>
+                        `;
+                        
+                        // 執行通知與語音
+                        playAlert();
+                        speakOrder(data.order.details, data.order.totalPrice);
+                    }
+                })
+                .catch(err => console.error("讀取失敗", err));
         }
 
-        // 啟用互動權限
-        document.body.onclick = () => { console.log("權限已就緒"); };
-        setInterval(checkForNewOrders, 10000); 
+        // 啟用互動權限並開始監控
+        document.body.onclick = () => { 
+            console.log("語音權限啟用");
+            setInterval(checkForNewOrders, 5000); 
+        };
     </script>
 </body>
 </html>
