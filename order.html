@@ -764,7 +764,7 @@
       }).join('');
     }
 
-    function openOptionModal(type, itemId) {
+  function openOptionModal(type, itemId) {
       modalQty = 1;
       document.getElementById('modalItemQty').innerText = modalQty;
       const modalBody = document.getElementById('optModalBody');
@@ -778,14 +778,14 @@
           <div class="option-group">
             <label class="option-label">選擇口味 (必選 1 項)</label>
             <div class="option-chips" id="flavorChips">
-              ${flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)"></button>`).join('')}
+              ${flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">${f}</button>`).join('')}
             </div>
           </div>
           <div class="option-group">
             <label class="option-label">基底配料 (二選一)</label>
             <div class="option-chips" id="baseChips">
-              <button type="button" class="chip" ${stockStatus['穀片'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">穀片</button>
-              <button type="button" class="chip" ${stockStatus['寒天波波'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">寒天波波</button>
+              <button type="button" class="chip" ${stockStatus['穀片'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">穀片</button>
+              <button type="button" class="chip" ${stockStatus['寒天波波'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">寒天波波</button>
             </div>
           </div>
           ${renderAddonsHtml()}
@@ -815,7 +815,7 @@
             <div class="option-group">
               <label class="option-label">口味</label>
               <div class="option-chips" id="flavorChips">
-                ${item.flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">${f}${stockStatus[f] === false ? '(缺)' : ''}</button>`).join('')}
+                ${item.flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">${f}</button>`).join('')}
               </div>
             </div>
           `;
@@ -844,7 +844,7 @@
             <div class="option-group">
               <label class="option-label">口味</label>
               <div class="option-chips" id="flavorChips">
-                ${item.flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="selectSingleChip(this)">${f}${stockStatus[f] === false ? '(缺)' : ''}</button>`).join('')}
+                ${item.flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">${f}</button>`).join('')}
               </div>
             </div>
           `;
@@ -863,7 +863,7 @@
           <label class="option-label">加料與需求 (可複選)</label>
           <div class="option-chips" id="addonChips">
             ${GLOBAL_ADDONS.map(addon => `
-              <button type="button" class="chip" data-price="${addon.price}" ${stockStatus[addon.name] === false ? 'disabled style="opacity:0.4; text-decoration:line-through;"' : ''} onclick="toggleMultiChip(this)">
+              <button type="button" class="chip" data-price="${addon.price}" ${stockStatus[addon.name] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="toggleMultiChip(this)">
                 ${addon.name} ${stockStatus[addon.name] === false ? '(已售完)' : `(+$${addon.price})`}
               </button>
             `).join('')}
@@ -871,7 +871,6 @@
         </div>
       `;
     }
-
     function autoSelectFirstChip(sel) {
       const el = document.querySelector(`${sel} .chip:not([disabled])`);
       if (el) el.classList.add('selected');
