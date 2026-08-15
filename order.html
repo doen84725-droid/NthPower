@@ -575,11 +575,11 @@
     let cart = [];
     let currentCustomizingItem = null;
     let modalQty = 1;
-    let pickupTimeType = 'now'; // 預設現在取餐
-    let stockStatus = {};       // 試算表庫存狀態
+    let pickupTimeType = 'now';
+    let stockStatus = {};
 
-    // ★★★ 在此填入你的 Google Apps Script 部署網址 ★★★
-    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwDyL_2iXsrU9tSAShclBSetsr4QLywIign0gX5ryxHgESAb_wFaYOteq8quW18zhcY/exec";
+    // 串接最新的 Apps Script 部署網址 (第 10 版)
+    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby0THsBLvRWcDz4kSzgC2yO990OwXB0Bi6g7fNwkRTWrvUvOLwuw7Imv9H00GiWuZxR/exec";
 
     /* =========================
        3. 頁面初始化與讀取庫存
@@ -589,7 +589,7 @@
     });
 
     function fetchStockAndRender() {
-      if (!GAS_WEBAPP_URL || GAS_WEBAPP_URL === "你的_GOOGLE_APPS_SCRIPT_網址") {
+      if (!GAS_WEBAPP_URL) {
         renderAllMenus();
         return;
       }
@@ -597,7 +597,7 @@
       fetch(GAS_WEBAPP_URL)
         .then(res => res.json())
         .then(res => {
-          if (res.status === "success") {
+          if (res.status === "success" && res.data) {
             stockStatus = res.data;
           }
           renderAllMenus();
@@ -704,7 +704,6 @@
           </div>
           ${renderAddonsHtml()}
         `;
-        // 預設選中第一個可選的口味與配料
         autoSelectFirstChip('#flavorChips');
         autoSelectFirstChip('#baseChips');
 
