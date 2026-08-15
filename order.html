@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>N次方 Nutrition Bar - 線上點餐</title>
   
-  <!-- 網頁小圖示 (Favicon) -->
   <link rel="icon" type="image/png" href="https://i.meee.com.tw/fwAEuJj.png" />
   <link rel="apple-touch-icon" href="https://i.meee.com.tw/fwAEuJj.png" />
 
@@ -36,7 +35,6 @@
       padding-bottom: 90px;
     }
 
-    /* 頂部 Header */
     header {
       background: #fff;
       padding: 14px 20px;
@@ -76,7 +74,6 @@
       margin-top: 1px;
     }
 
-    /* 頂部隨時查看號碼牌按鈕 */
     .btn-view-ticket {
       background: #faf6f5;
       color: #8e5b52;
@@ -86,7 +83,7 @@
       font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
-      display: none; /* 有訂單時自動顯示 */
+      display: none;
       align-items: center;
       gap: 4px;
       animation: pulse 2s infinite;
@@ -98,7 +95,6 @@
       100% { transform: scale(1); }
     }
 
-    /* 分類導覽標籤 (Tabs) */
     .category-nav {
       display: flex;
       overflow-x: auto;
@@ -133,7 +129,6 @@
       box-shadow: 0 2px 6px rgba(74,107,93,0.25);
     }
 
-    /* 菜單列表容器 */
     .menu-container {
       padding: 16px;
       max-width: 600px;
@@ -165,7 +160,6 @@
       margin-left: 4px;
     }
 
-    /* 餐點卡片 */
     .menu-card {
       background: var(--card-bg);
       border-radius: 14px;
@@ -176,7 +170,6 @@
       align-items: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.03);
       border: 1px solid var(--border);
-      transition: transform 0.15s ease;
     }
 
     .item-info {
@@ -214,7 +207,6 @@
       font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.15s;
     }
     .btn-add:active {
       transform: scale(0.95);
@@ -222,12 +214,9 @@
       color: #fff;
     }
 
-    /* 底部固定購物車欄 */
     .cart-bar {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       background: #fff;
       padding: 12px 20px;
       box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
@@ -253,7 +242,6 @@
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(74,107,93,0.3);
-      transition: opacity 0.2s;
     }
     .btn-checkout:disabled {
       background: #cbd5e0;
@@ -261,7 +249,6 @@
       cursor: not-allowed;
     }
 
-    /* 彈窗樣式 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -312,7 +299,6 @@
       background: #fff;
       color: var(--text-main);
       font-weight: 500;
-      transition: all 0.15s;
     }
     .chip.selected {
       border-color: var(--primary);
@@ -331,18 +317,14 @@
     }
     .qty-counter { display: flex; align-items: center; gap: 12px; }
     .qty-btn {
-      width: 34px;
-      height: 34px;
+      width: 34px; height: 34px;
       border-radius: 50%;
       border: 1px solid var(--border-focus);
       background: #f8f9fa;
       font-size: 1.2rem;
       font-weight: bold;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-main);
+      display: flex; align-items: center; justify-content: center;
     }
 
     .btn-modal-submit {
@@ -369,7 +351,6 @@
     .cart-item-title { font-weight: 700; font-size: 0.95rem; }
     .cart-item-opts { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
 
-    /* 結帳表單卡片 */
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
     .form-group input, .form-group textarea {
@@ -381,16 +362,8 @@
       outline: none;
       background: #fff;
     }
-    .form-group input:focus, .form-group textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(74,107,93,0.15);
-    }
 
-    /* 📱 卡片式選擇組 */
-    .card-select-grid {
-      display: flex;
-      gap: 10px;
-    }
+    .card-select-grid { display: flex; gap: 10px; }
     .select-card {
       flex: 1;
       padding: 14px 10px;
@@ -399,34 +372,22 @@
       background: #fff;
       cursor: pointer;
       text-align: center;
-      transition: all 0.2s;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 4px;
     }
-    .select-card .card-main-text {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-    .select-card .card-sub-text {
-      font-size: 0.74rem;
-      color: var(--text-muted);
-      line-height: 1.2;
-    }
+    .select-card .card-main-text { font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
+    .select-card .card-sub-text { font-size: 0.74rem; color: var(--text-muted); line-height: 1.2; }
     .select-card.selected {
       border-color: var(--primary);
       background: var(--primary-light);
       box-shadow: 0 2px 8px rgba(74,107,93,0.15);
     }
     .select-card.selected .card-main-text,
-    .select-card.selected .card-sub-text {
-      color: var(--primary);
-    }
+    .select-card.selected .card-sub-text { color: var(--primary); }
 
-    /* 成功號碼牌彈窗 */
     .success-modal { text-align: center; padding: 25px 15px; }
     .ticket-box {
       background: #f8f6f5;
@@ -446,7 +407,6 @@
 </head>
 <body>
 
-  <!-- 頂部 Header -->
   <header>
     <div class="header-brand">
       <img src="https://i.meee.com.tw/fwAEuJj.png" alt="N次方 Logo" class="header-logo" />
@@ -460,7 +420,6 @@
     </button>
   </header>
 
-  <!-- 分類標籤導覽 -->
   <div class="category-nav">
     <button class="nav-tab active" onclick="scrollToCategory('cat-smoothies')">果昔</button>
     <button class="nav-tab" onclick="scrollToCategory('cat-yogurt')">優格燕麥果昔</button>
@@ -468,15 +427,9 @@
     <button class="nav-tab" onclick="scrollToCategory('cat-energy')">機能飲</button>
   </div>
 
-  <!-- 菜單主內容 -->
   <main class="menu-container">
-
-    <!-- 1. 果昔區 -->
     <div id="cat-smoothies">
-      <div class="section-title">
-        Smoothies 果昔
-        <span class="section-note">(可選配料：穀片 / 寒天波波)</span>
-      </div>
+      <div class="section-title">Smoothies 果昔 <span class="section-note">(可選配料：穀片 / 寒天波波)</span></div>
       <div class="menu-card">
         <div class="item-info">
           <div class="item-name">經典果昔</div>
@@ -487,30 +440,22 @@
       </div>
     </div>
 
-    <!-- 2. 優格燕麥果昔 -->
     <div id="cat-yogurt">
-      <div class="section-title">
-        優格燕麥果昔
-        <span class="section-note">(含優格/麥片/堅果/穀片)</span>
-      </div>
+      <div class="section-title">優格燕麥果昔 <span class="section-note">(含優格/麥片/堅果/穀片)</span></div>
       <div id="yogurt-list"></div>
     </div>
 
-    <!-- 3. 機能茶 -->
     <div id="cat-tea">
       <div class="section-title">機能茶 (冷/熱可選)</div>
       <div id="tea-list"></div>
     </div>
 
-    <!-- 4. 機能飲 -->
     <div id="cat-energy">
       <div class="section-title">Energy 機能飲</div>
       <div id="energy-list"></div>
     </div>
-
   </main>
 
-  <!-- 底部固定購物車 -->
   <div class="cart-bar">
     <div class="cart-info" onclick="openCartModal()">
       <div class="cart-count">已選 <span id="cartTotalQty">0</span> 杯 (點此查看明細)</div>
@@ -519,7 +464,6 @@
     <button id="btnProceed" class="btn-checkout" disabled onclick="openCheckoutModal()">去結帳 ➔</button>
   </div>
 
-  <!-- 彈窗 1：選項定制 Modal -->
   <div id="optionModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -527,7 +471,6 @@
         <button class="btn-close" onclick="closeModal('optionModal')">&times;</button>
       </div>
       <div id="optModalBody"></div>
-
       <div class="modal-qty-row">
         <span style="font-weight:700;">數量</span>
         <div class="qty-counter">
@@ -536,12 +479,10 @@
           <button class="qty-btn" onclick="updateModalQty(1)">+</button>
         </div>
       </div>
-
       <button class="btn-modal-submit" onclick="confirmAddToCart()">加入購物車</button>
     </div>
   </div>
 
-  <!-- 彈窗 2：購物車明細 Modal -->
   <div id="cartModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -553,7 +494,6 @@
     </div>
   </div>
 
-  <!-- 彈窗 3：結帳資料 Modal -->
   <div id="checkoutModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -561,18 +501,14 @@
         <button class="btn-close" onclick="closeModal('checkoutModal')">&times;</button>
       </div>
       <form id="orderForm" onsubmit="handleOrderSubmit(event)">
-        
         <div class="form-group">
           <label>姓名 *</label>
           <input type="text" id="custName" required placeholder="請輸入稱呼" />
         </div>
-
         <div class="form-group">
           <label>聯絡電話 *</label>
           <input type="tel" id="custPhone" required placeholder="09xx-xxx-xxx" />
         </div>
-        
-        <!-- 預計取餐時間 (卡片式) -->
         <div class="form-group">
           <label>預計取餐時間 *</label>
           <div class="card-select-grid">
@@ -587,8 +523,6 @@
           </div>
           <input type="time" id="custTime" style="display: none; margin-top: 10px;" />
         </div>
-
-        <!-- 付款方式 (卡片式) -->
         <div class="form-group">
           <label>付款方式 *</label>
           <div class="card-select-grid">
@@ -602,18 +536,15 @@
             </div>
           </div>
         </div>
-
         <div class="form-group">
           <label>備註需求</label>
           <textarea id="custNotes" rows="2" placeholder="例如：少冰、不要吸管..."></textarea>
         </div>
-        
         <button type="submit" id="btnSubmitOrder" class="btn-modal-submit">確認送出訂單 ($<span id="checkoutTotalAmount">0</span>)</button>
       </form>
     </div>
   </div>
 
-  <!-- 彈窗 4：取餐號碼牌 Modal -->
   <div id="ticketModal" class="modal-overlay">
     <div class="modal-content success-modal">
       <h2 style="color: var(--primary);">🎉 訂單送出成功！</h2>
@@ -764,7 +695,7 @@
       }).join('');
     }
 
-function openOptionModal(type, itemId) {
+    function openOptionModal(type, itemId) {
       modalQty = 1;
       document.getElementById('modalItemQty').innerText = modalQty;
       const modalBody = document.getElementById('optModalBody');
@@ -856,6 +787,7 @@ function openOptionModal(type, itemId) {
 
       openModal('optionModal');
     }
+
     function renderAddonsHtml() {
       return `
         <div class="option-group">
@@ -863,13 +795,14 @@ function openOptionModal(type, itemId) {
           <div class="option-chips" id="addonChips">
             ${GLOBAL_ADDONS.map(addon => `
               <button type="button" class="chip" data-price="${addon.price}" ${stockStatus[addon.name] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="toggleMultiChip(this)">
-                ${addon.name} ${stockStatus[addon.name] === false ? '(已售完)' : `(+$${addon.price})`}
+                ${addon.name} (+$${addon.price})
               </button>
             `).join('')}
           </div>
         </div>
       `;
     }
+
     function autoSelectFirstChip(sel) {
       const el = document.querySelector(`${sel} .chip:not([disabled])`);
       if (el) el.classList.add('selected');
@@ -896,7 +829,7 @@ function openOptionModal(type, itemId) {
       let extraPrice = 0;
 
       const flavorChip = document.querySelector('#flavorChips .chip.selected');
-      if (flavorChip) selectedOpts.push(`口味: ${flavorChip.innerText.replace('(缺)', '')}`);
+      if (flavorChip) selectedOpts.push(`口味: ${flavorChip.innerText}`);
 
       const baseChip = document.querySelector('#baseChips .chip.selected');
       if (baseChip) selectedOpts.push(`配料: ${baseChip.innerText}`);
@@ -905,7 +838,7 @@ function openOptionModal(type, itemId) {
       if (tempChip) selectedOpts.push(`溫度: ${tempChip.innerText}`);
 
       document.querySelectorAll('#addonChips .chip.selected').forEach(chip => {
-        selectedOpts.push(chip.innerText);
+        selectedOpts.push(chip.innerText.split('(')[0].trim());
         extraPrice += parseInt(chip.getAttribute('data-price') || 0);
       });
 
@@ -1028,7 +961,6 @@ function openOptionModal(type, itemId) {
       })
       .then(res => res.json())
       .then(data => {
-        // 1. 儲存號碼牌資料到手機瀏覽器
         const ticketInfo = {
           orderNo: orderNo,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -1037,16 +969,12 @@ function openOptionModal(type, itemId) {
         };
         localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
 
-        // 2. 清空購物車與結帳表單
         cart = [];
         updateCartUI();
         document.getElementById('orderForm').reset();
         closeModal('checkoutModal');
 
-        // 3. 顯示右上角「我的號碼」按鈕，並立刻彈出大字號碼牌視窗
         document.getElementById('btnViewTicket').style.display = 'inline-flex';
-        
-        // 填入號碼與明細並顯示彈窗
         document.getElementById('displayTicketNo').innerText = orderNo;
         document.getElementById('ticketOrderDetails').innerHTML = `
           <div><strong>下單時間：</strong>${ticketInfo.time}</div>
