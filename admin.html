@@ -362,7 +362,7 @@ function speakOrder(orderNo, details, price) {
         });
     }
 
-    function renderOrders(orders) {
+function renderOrders(orders) {
       const container = document.getElementById('order-container');
       const oneHourAgo = new Date().getTime() - (60 * 60 * 1000);
       
@@ -386,6 +386,9 @@ function speakOrder(orderNo, details, price) {
         }
         knownOrderTimestamps.add(orderKey);
 
+        // 自動將明細中的 ($數字) 替換為 (數字元) 讓畫面更清爽
+        const cleanDetailsForDisplay = (order.details || '').replace(/\(\$(\d+)\)/g, '($1元)');
+
         html += `
           <div class="order-card">
             <div class="order-header-row">
@@ -397,10 +400,10 @@ function speakOrder(orderNo, details, price) {
               <span class="cust-name">👤 顧客：${order.name || '未填寫'}</span>
               <span class="cust-phone">📞 電話：${order.phone || '未填寫'}</span>
             </div>
-            <div class="order-details">📋 餐點內容：<br>${order.details}</div>
+            <div class="order-details">📋 餐點內容：<br>${cleanDetailsForDisplay}</div>
             <div class="order-footer">
               <span>📝 備註：${order.notes || '無'}</span>
-              <span class="order-price">💰 總金額：$${order.totalPrice} 元</span>
+              <span class="order-price">💰 總金額：${order.totalPrice} 元</span>
             </div>
           </div>
         `;
