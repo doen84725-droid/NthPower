@@ -315,9 +315,15 @@
       return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
-    function speakOrder(orderNo, details, price) {
+function speakOrder(orderNo, details, price) {
       const volume = document.getElementById('volume').value;
-      const textToSpeak = `號碼${orderNo}，新訂單！內容是，${details}。總金額，${price}元整。`;
+      
+      // 清除內容與金額中的 $ 符號，並明確加上「元」
+      const cleanDetails = details.replace(/\$/g, '');
+      const cleanPrice = String(price).replace(/\$/g, '');
+      
+      const textToSpeak = `號碼 ${orderNo}，新訂單！內容是：${cleanDetails}。總金額為：${cleanPrice} 元。`;
+      
       const msg = new SpeechSynthesisUtterance(textToSpeak);
       msg.volume = volume;
       msg.lang = 'zh-TW';
