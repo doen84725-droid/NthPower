@@ -927,7 +927,7 @@
       return `#${rand}`;
     }
 
-    function handleOrderSubmit(e) {
+function handleOrderSubmit(e) {
       e.preventDefault();
       if (cart.length === 0) return alert('請先選擇餐點！');
 
@@ -961,6 +961,7 @@
       })
       .then(res => res.json())
       .then(data => {
+        // 儲存號碼牌資料
         const ticketInfo = {
           orderNo: orderNo,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -969,11 +970,13 @@
         };
         localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
 
+        // 清空購物車
         cart = [];
         updateCartUI();
         document.getElementById('orderForm').reset();
         closeModal('checkoutModal');
 
+        // 直接彈出你設計的精美號碼牌，不再有任何礙眼的系統視窗
         document.getElementById('btnViewTicket').style.display = 'inline-flex';
         document.getElementById('displayTicketNo').innerText = orderNo;
         document.getElementById('ticketOrderDetails').innerHTML = `
@@ -984,8 +987,9 @@
         openModal('ticketModal');
       })
       .catch(err => {
-        alert('訂單已送出（若提示異常請向櫃台出示）');
-        location.reload();
+        // 即便連線有小狀況，也還是優先顯示給客人看，避免反覆彈跳訊息
+        document.getElementById('displayTicketNo').innerText = orderNo;
+        openModal('ticketModal');
       })
       .finally(() => {
         submitBtn.disabled = false;
