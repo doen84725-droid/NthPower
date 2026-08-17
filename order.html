@@ -857,7 +857,7 @@
       updateCartUI();
     }
 
-    function updateCartUI() {
+function updateCartUI() {
       const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
       const totalPrice = cart.reduce((sum, item) => sum + item.total, 0);
 
@@ -870,44 +870,28 @@
       if (cart.length === 0) {
         listContainer.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">購物車目前是空的</p>';
       } else {
+        // 使用更直覺、點擊區域更大的行設計，提升手機觸控流暢度
         listContainer.innerHTML = cart.map((item, index) => `
-          <div class="cart-item-row">
-            <div class="cart-item-info">
-              <div class="cart-item-title">${item.name} x ${item.qty}杯</div>
-              <div class="cart-item-opts">${item.options || '標準'}</div>
+          <div class="cart-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border);">
+            <div class="cart-item-info" style="flex: 1; padding-right: 10px;">
+              <div class="cart-item-title" style="font-weight: 700; font-size: 0.95rem;">${item.name} x ${item.qty}杯</div>
+              <div class="cart-item-opts" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">${item.options || '標準'}</div>
             </div>
-            <div style="font-weight:700; color:var(--accent); margin-right:12px;">$${item.total}</div>
-            <button onclick="removeFromCart(${index})" style="color:#e53e3e; background:none; border:none; font-size:1.3rem; cursor:pointer;">&times;</button>
+            <div style="font-weight: 700; color: var(--accent); margin-right: 14px; white-space: nowrap;">$${item.total}</div>
+            <button type="button" onclick="removeFromCart(${index})" style="background: #fff0f0; color: #e53e3e; border: 1px solid #ffcccc; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✕</button>
           </div>
         `).join('');
       }
     }
 
     function removeFromCart(index) {
+      // 加上快速刪除動畫或直接流暢切換
       cart.splice(index, 1);
       updateCartUI();
-      if (cart.length === 0) closeModal('cartModal');
-    }
-
-    function setPickupTimeType(type) {
-      pickupTimeType = type;
-      const cardNow = document.getElementById('cardPickupNow');
-      const cardLater = document.getElementById('cardPickupLater');
-      const timeInput = document.getElementById('custTime');
-
-      if (type === 'now') {
-        cardNow.classList.add('selected');
-        cardLater.classList.remove('selected');
-        timeInput.style.display = 'none';
-        timeInput.removeAttribute('required');
-      } else {
-        cardLater.classList.add('selected');
-        cardNow.classList.remove('selected');
-        timeInput.style.display = 'block';
-        timeInput.setAttribute('required', 'required');
+      if (cart.length === 0) {
+        closeModal('cartModal');
       }
     }
-
     function setPaymentMethod(method) {
       selectedPayment = method;
       const cardCash = document.getElementById('payCardCash');
