@@ -427,34 +427,15 @@
     <button class="nav-tab" onclick="scrollToCategory('cat-energy')">機能飲</button>
   </div>
 
-  <main class="menu-container">
-    <div id="cat-smoothies">
-      <div class="section-title">Smoothies 果昔 <span class="section-note">(可選配料：穀片 / 寒天波波)</span></div>
-      <div class="menu-card">
-        <div class="item-info">
-          <div class="item-name">經典果昔</div>
-          <div class="item-desc">香草、草莓、巧克力、芒果、咖啡、奶香曲奇、薄荷巧克力</div>
-          <div class="item-price">$100</div>
-        </div>
-        <button class="btn-add" onclick="openOptionModal('smoothies')">選擇口味 ＋</button>
-      </div>
-    </div>
+<!-- 分類導覽列 (會依據試算表自動生成或對應) -->
+<div class="category-nav" id="dynamicCategoryNav">
+    <!-- 動態生成分類分頁 -->
+</div>
 
-    <div id="cat-yogurt">
-      <div class="section-title">優格燕麥果昔 <span class="section-note">(含優格/麥片/堅果/穀片)</span></div>
-      <div id="yogurt-list"></div>
-    </div>
-
-    <div id="cat-tea">
-      <div class="section-title">機能茶 (冷/熱可選)</div>
-      <div id="tea-list"></div>
-    </div>
-
-    <div id="cat-energy">
-      <div class="section-title">Energy 機能飲</div>
-      <div id="energy-list"></div>
-    </div>
-  </main>
+<!-- 動態菜單主容器 -->
+<main class="menu-container" id="dynamic-menu-container">
+    <!-- 試算表裡的資料會自動在這裡長出區段與卡片 -->
+</main>
 
   <div class="cart-bar">
     <div class="cart-info" onclick="openCartModal()">
