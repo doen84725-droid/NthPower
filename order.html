@@ -641,61 +641,61 @@
       renderEnergyItems();
     }
 
-    function renderYogurtItems() {
-      document.getElementById('yogurt-list').innerHTML = YOGURT_ITEMS.map(item => {
-        const isSoldOut = stockStatus[item.name] === false;
-        return `
-          <div class="menu-card" style="${isSoldOut ? 'opacity: 0.55;' : ''}">
+function renderYogurtItems() {
+      const container = document.getElementById('yogurt-list');
+      // 只留下供應中的項目
+      const availableItems = YOGURT_ITEMS.filter(item => stockStatus[item.name] !== false);
+      
+      if (availableItems.length === 0) {
+        container.innerHTML = '<p style="color:#999; font-size:0.9rem; padding:10px;">目前無供應項目</p>';
+        return;
+      }
+
+      container.innerHTML = availableItems.map(item => `
+          <div class="menu-card">
             <div class="item-info">
-              <div class="item-name">${item.name} ${isSoldOut ? '<span style="color:#e53e3e; font-size:0.8rem;">(已售完)</span>' : ''}</div>
+              <div class="item-name">${item.name}</div>
               <div class="item-desc">${item.desc}</div>
               <div class="item-price">$${item.price}</div>
             </div>
-            <button class="btn-add" ${isSoldOut ? 'disabled style="background:#edf2f7; color:#a0aec0; border-color:#cbd5e0; cursor:not-allowed;"' : ''} onclick="openOptionModal('yogurt', '${item.id}')">
-              ${isSoldOut ? '已售完' : '加點 ＋'}
-            </button>
+            <button class="btn-add" onclick="openOptionModal('yogurt', '${item.id}')">加點 ＋</button>
           </div>
-        `;
-      }).join('');
+      `).join('');
     }
-
-    function renderTeaItems() {
-      document.getElementById('tea-list').innerHTML = TEA_ITEMS.map(item => {
-        const isSoldOut = stockStatus[item.name] === false;
-        return `
-          <div class="menu-card" style="${isSoldOut ? 'opacity: 0.55;' : ''}">
+    
+function renderTeaItems() {
+      const container = document.getElementById('tea-list');
+      const availableItems = TEA_ITEMS.filter(item => stockStatus[item.name] !== false);
+      
+      container.innerHTML = availableItems.map(item => `
+          <div class="menu-card">
             <div class="item-info">
-              <div class="item-name">${item.name} ${isSoldOut ? '<span style="color:#e53e3e; font-size:0.8rem;">(已售完)</span>' : ''}</div>
+              <div class="item-name">${item.name}</div>
               <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能健康茶飲'}</div>
               <div class="item-price">$${item.price}</div>
             </div>
-            <button class="btn-add" ${isSoldOut ? 'disabled style="background:#edf2f7; color:#a0aec0; border-color:#cbd5e0; cursor:not-allowed;"' : ''} onclick="openOptionModal('tea', '${item.id}')">
-              ${isSoldOut ? '已售完' : '選擇 ＋'}
-            </button>
+            <button class="btn-add" onclick="openOptionModal('tea', '${item.id}')">選擇 ＋</button>
           </div>
-        `;
-      }).join('');
+      `).join('');
     }
 
     function renderEnergyItems() {
-      document.getElementById('energy-list').innerHTML = ENERGY_ITEMS.map(item => {
-        const isSoldOut = stockStatus[item.name] === false;
-        return `
-          <div class="menu-card" style="${isSoldOut ? 'opacity: 0.55;' : ''}">
+      const container = document.getElementById('energy-list');
+      const availableItems = ENERGY_ITEMS.filter(item => stockStatus[item.name] !== false);
+      
+      container.innerHTML = availableItems.map(item => `
+          <div class="menu-card">
             <div class="item-info">
-              <div class="item-name">${item.name} ${isSoldOut ? '<span style="color:#e53e3e; font-size:0.8rem;">(已售完)</span>' : ''}</div>
+              <div class="item-name">${item.name}</div>
               <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能補給'}</div>
               <div class="item-price">$${item.price}</div>
             </div>
-            <button class="btn-add" ${isSoldOut ? 'disabled style="background:#edf2f7; color:#a0aec0; border-color:#cbd5e0; cursor:not-allowed;"' : ''} onclick="openOptionModal('energy', '${item.id}')">
-              ${isSoldOut ? '已售完' : '選擇 ＋'}
-            </button>
+            <button class="btn-add" onclick="openOptionModal('energy', '${item.id}')">選擇 ＋</button>
           </div>
-        `;
-      }).join('');
+      `).join('');
     }
 
-    function openOptionModal(type, itemId) {
+function openOptionModal(type, itemId) {
       modalQty = 1;
       document.getElementById('modalItemQty').innerText = modalQty;
       const modalBody = document.getElementById('optModalBody');
@@ -704,19 +704,25 @@
       if (type === 'smoothies') {
         currentCustomizingItem = { name: '經典果昔', basePrice: 100, type: 'smoothies' };
         document.getElementById('optModalTitle').innerText = '經典果昔 ($100)';
+        
         const flavors = ['香草', '草莓', '巧克力', '芒果', '咖啡', '奶香曲奇', '薄荷巧克力'];
+        // 💡 加上 filter：只留下庫存供應中的口味
+        const availableFlavors = flavors.filter(f => stockStatus[f] !== false);
+        
+        // 💡 加上 filter：只留下供應中的基底配料 (穀片 / 寒天波波)
+        const baseOptions = ['穀片', '寒天波波'].filter(b => stockStatus[b] !== false);
+
         modalBody.innerHTML = `
           <div class="option-group">
             <label class="option-label">選擇口味 (必選 1 項)</label>
             <div class="option-chips" id="flavorChips">
-              ${flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">${f}</button>`).join('')}
+              ${availableFlavors.map(f => `<button type="button" class="chip" onclick="selectSingleChip(this)">${f}</button>`).join('')}
             </div>
           </div>
           <div class="option-group">
-            <label class="option-label">基底配料 (二選一)</label>
+            <label class="option-label">基底配料</label>
             <div class="option-chips" id="baseChips">
-              <button type="button" class="chip" ${stockStatus['穀片'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">穀片</button>
-              <button type="button" class="chip" ${stockStatus['寒天波波'] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">寒天波波</button>
+              ${baseOptions.map(b => `<button type="button" class="chip" onclick="selectSingleChip(this)">${b}</button>`).join('')}
             </div>
           </div>
           ${renderAddonsHtml()}
@@ -732,6 +738,7 @@
         const item = TEA_ITEMS.find(i => i.id === itemId);
         currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'tea' };
         document.getElementById('optModalTitle').innerText = `${item.name} ($${item.price})`;
+        
         let html = `
           <div class="option-group">
             <label class="option-label">溫度</label>
@@ -742,11 +749,13 @@
           </div>
         `;
         if (item.flavors.length) {
+          // 💡 加上 filter：只留下供應中的茶飲口味
+          const availableTeaFlavors = item.flavors.filter(f => stockStatus[f] !== false);
           html += `
             <div class="option-group">
               <label class="option-label">口味</label>
               <div class="option-chips" id="flavorChips">
-                ${item.flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">${f}</button>`).join('')}
+                ${availableTeaFlavors.map(f => `<button type="button" class="chip" onclick="selectSingleChip(this)">${f}</button>`).join('')}
               </div>
             </div>
           `;
@@ -758,6 +767,7 @@
         const item = ENERGY_ITEMS.find(i => i.id === itemId);
         currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'energy' };
         document.getElementById('optModalTitle').innerText = `${item.name} ($${item.price})`;
+        
         let html = '';
         if (item.hasTemp) {
           html += `
@@ -771,11 +781,13 @@
           `;
         }
         if (item.flavors.length) {
+          // 💡 加上 filter：只留下供應中的機能飲口味
+          const availableEnergyFlavors = item.flavors.filter(f => stockStatus[f] !== false);
           html += `
             <div class="option-group">
               <label class="option-label">口味</label>
               <div class="option-chips" id="flavorChips">
-                ${item.flavors.map(f => `<button type="button" class="chip" ${stockStatus[f] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="selectSingleChip(this)">${f}</button>`).join('')}
+                ${availableEnergyFlavors.map(f => `<button type="button" class="chip" onclick="selectSingleChip(this)">${f}</button>`).join('')}
               </div>
             </div>
           `;
@@ -788,13 +800,18 @@
       openModal('optionModal');
     }
 
+    // 💡 同步修改加料區：利用 filter 過濾掉已售完的加料項目
     function renderAddonsHtml() {
+      const availableAddons = GLOBAL_ADDONS.filter(addon => stockStatus[addon.name] !== false);
+      
+      if (availableAddons.length === 0) return '';
+
       return `
         <div class="option-group">
           <label class="option-label">加料與需求 (可複選)</label>
           <div class="option-chips" id="addonChips">
-            ${GLOBAL_ADDONS.map(addon => `
-              <button type="button" class="chip" data-price="${addon.price}" ${stockStatus[addon.name] === false ? 'disabled style="opacity:0.4; text-decoration:line-through; cursor:not-allowed;"' : ''} onclick="toggleMultiChip(this)">
+            ${availableAddons.map(addon => `
+              <button type="button" class="chip" data-price="${addon.price}" onclick="toggleMultiChip(this)">
                 ${addon.name} (+$${addon.price})
               </button>
             `).join('')}
@@ -802,7 +819,6 @@
         </div>
       `;
     }
-
     function autoSelectFirstChip(sel) {
       const el = document.querySelector(`${sel} .chip:not([disabled])`);
       if (el) el.classList.add('selected');
