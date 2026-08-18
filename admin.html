@@ -1,476 +1,460 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>N次方 - 店長工作台 (訂單監控 ＆ 庫存管理)</title>
-  <style>
-    :root {
-      --morandi-bg: #f4efed;
-      --morandi-card: #ffffff;
-      --morandi-primary: #8e5b52;
-      --morandi-accent: #b07d72;
-      --morandi-text: #2c2220;
-      --border-color: #d1c2be;
-      --green: #28a745;
-      --red: #dc3545;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>N次方 - 店長工作台 (訂單監控 ＆ 庫存管理)</title>
+    <style>
+        :root {
+            --morandi-bg: #f4efed;
+            --morandi-card: #ffffff;
+            --morandi-primary: #8e5b52;
+            --morandi-accent: #b07d72;
+            --morandi-text: #2c2220;
+            --border-color: #d1c2be;
+            --green: #28a745;
+            --red: #dc3545;
+        }
 
-    body {
-      font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
-      padding: 20px;
-      background-color: var(--morandi-bg);
-      color: var(--morandi-text);
-      margin: 0;
-    }
+        body {
+            font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            background-color: var(--morandi-bg);
+            color: var(--morandi-text);
+            margin: 0;
+        }
 
-    .container {
-      max-width: 650px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
 
-    .section-card {
-      background: var(--morandi-card);
-      border-radius: 14px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(142, 91, 82, 0.1);
-      border: 1px solid var(--border-color);
-    }
+        .section-card {
+            background: var(--morandi-card);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(142, 91, 82, 0.1);
+            border: 1px solid var(--border-color);
+        }
 
-    .card-header {
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        .card-header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    h1, h2 {
-      margin: 0;
-      color: var(--morandi-primary);
-      font-weight: bold;
-    }
+        h1, h2 {
+            margin: 0;
+            color: var(--morandi-primary);
+            font-weight: bold;
+        }
+        h1 { font-size: 22px; }
+        h2 { font-size: 18px; }
 
-    h1 { font-size: 22px; }
-    h2 { font-size: 18px; }
+        .hint-bar {
+            font-size: 13px;
+            font-weight: bold;
+            color: #735753;
+            background: #faf6f5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .hint-bar {
-      font-size: 13px;
-      font-weight: bold;
-      color: #735753;
-      background: #faf6f5;
-      padding: 8px 12px;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        .volume-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    .volume-box {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+        input[type="range"] {
+            accent-color: var(--morandi-primary);
+            cursor: pointer;
+        }
 
-    input[type="range"] {
-      accent-color: var(--morandi-primary);
-      cursor: pointer;
-    }
+        #order-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 440px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
 
-    #order-container {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      max-height: 440px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
+        .order-card {
+            background: #faf6f5;
+            padding: 16px;
+            border-left: 8px solid var(--morandi-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            text-align: left;
+        }
 
-    .order-card {
-      background: #faf6f5;
-      padding: 16px;
-      border-left: 8px solid var(--morandi-primary);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-      text-align: left;
-    }
+        .order-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #735753;
+            font-weight: bold;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+        }
 
-    .order-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      color: #735753;
-      font-weight: bold;
-      border-bottom: 1px dashed var(--border-color);
-      padding-bottom: 6px;
-      margin-bottom: 8px;
-    }
+        .order-badge {
+            background: var(--morandi-primary);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
-    .order-badge {
-      background: var(--morandi-primary);
-      color: #fff;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: bold;
-    }
+        .cust-info-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
-    .cust-info-box {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: bold;
-    }
+        .cust-name { color: var(--morandi-primary); }
+        .cust-phone { color: var(--green); }
 
-    .cust-name { color: var(--morandi-primary); }
-    .cust-phone { color: var(--green); }
+        .order-details {
+            font-size: 15px;
+            font-weight: bold;
+            line-height: 1.6;
+            white-space: pre-line;
+            margin: 8px 0;
+        }
 
-    .order-details {
-      font-size: 15px;
-      font-weight: bold;
-      line-height: 1.6;
-      white-space: pre-line;
-      margin: 8px 0;
-    }
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 6px;
+            margin-top: 8px;
+            font-size: 13px;
+        }
 
-    .order-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px dashed var(--border-color);
-      padding-top: 6px;
-      margin-top: 8px;
-      font-size: 13px;
-    }
+        .order-price {
+            font-size: 17px;
+            color: var(--morandi-primary);
+            font-weight: bold;
+        }
 
-    .order-price {
-      font-size: 17px;
-      color: var(--morandi-primary);
-      font-weight: bold;
-    }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #735753;
+            font-weight: bold;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+        }
 
-    .empty-state {
-      text-align: center;
-      padding: 30px;
-      color: #735753;
-      font-weight: bold;
-      border: 2px dashed var(--border-color);
-      border-radius: 8px;
-    }
+        .admin-pwd-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
 
-    .admin-pwd-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
+        .admin-pwd-bar input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
 
-    .admin-pwd-bar input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-    }
+        .btn-refresh {
+            background: var(--morandi-primary);
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-    .btn-refresh {
-      background: var(--morandi-primary);
-      color: #fff;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+        .category-group {
+            margin-top: 16px;
+        }
 
-    .category-group {
-      margin-top: 16px;
-    }
+        .category-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--morandi-primary);
+            background: #faf6f5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
 
-    .category-title {
-      font-size: 15px;
-      font-weight: bold;
-      color: var(--morandi-primary);
-      background: #faf6f5;
-      padding: 6px 12px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
+        .stock-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: bold;
+            font-size: 15px;
+        }
 
-    .stock-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 8px;
-      border-bottom: 1px solid var(--border-color);
-      font-weight: bold;
-      font-size: 15px;
-    }
+        .switch-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
 
-    .switch-btn {
-      padding: 6px 16px;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-
-    .btn-available {
-      background-color: var(--green);
-      color: white;
-    }
-
-    .btn-soldout {
-      background-color: var(--red);
-      color: white;
-    }
-  </style>
+        .btn-available { background-color: var(--green); color: white; }
+        .btn-soldout { background-color: var(--red); color: white; }
+    </style>
 </head>
 <body>
-  <div class="container">
 
-    <!-- 1. 上半部：即時訂單監控台 -->
-    <div class="section-card">
-      <div class="card-header">
-        <h1>🔔 即時訂單監控</h1>
-        <div class="volume-box">
-          <label for="volume" style="font-size: 13px; font-weight: bold;">🔊 音量</label>
-          <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7" />
+    <div class="container">
+        <!-- 1. 上半部：即時訂單監控台 -->
+        <div class="section-card">
+            <div class="card-header">
+                <h1>🔔 即時訂單監控</h1>
+                <div class="volume-box">
+                    <label for="volume" style="font-size: 13px; font-weight: bold;">🔊 音量</label>
+                    <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7" />
+                </div>
+            </div>
+            <div class="hint-bar">
+                <span>💡 點擊網頁任意處解鎖自動響鈴與語音播報</span>
+                <span id="sync-status">連線中...</span>
+            </div>
+            <div id="order-container">
+                <div class="empty-state">等待新訂單中...</div>
+            </div>
         </div>
-      </div>
-      <div class="hint-bar">
-        <span>💡 點擊網頁任意處解鎖自動響鈴與語音播報</span>
-        <span id="sync-status">連線中...</span>
-      </div>
-      <div id="order-container">
-        <div class="empty-state">等待新訂單中...</div>
-      </div>
+
+        <!-- 2. 下半部：菜單庫存管理後台 -->
+        <div class="section-card">
+            <div class="card-header">
+                <h2>🌿 菜單庫存狀態管理</h2>
+                <button class="btn-refresh" onclick="loadStockAndOrders()">重新整理</button>
+            </div>
+            <div class="admin-pwd-bar">
+                <input type="password" id="adminPwd" placeholder="請輸入管理密碼 (預設: 1234)" value="1234" />
+            </div>
+            <div id="stock-list-container">載入中...</div>
+        </div>
     </div>
 
-    <!-- 2. 下半部：菜單庫存管理後台 -->
-    <div class="section-card">
-      <div class="card-header">
-        <h2>🌿 菜單庫存狀態管理</h2>
-        <button class="btn-refresh" onclick="loadStockAndOrders()">重新整理</button>
-      </div>
+    <script>
+        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyeQwnhmec-rHGxuZhbwf7a7mOFdmE-RmobkTxeEpO6ASf44_9BC-WrZDYB2UPka1LB/exec";
 
-      <div class="admin-pwd-bar">
-        <input type="password" id="adminPwd" placeholder="請輸入管理密碼 (預設: 1234)" value="1234" />
-      </div>
-
-      <div id="stock-list-container">載入中...</div>
-    </div>
-
-  </div>
-
-  <script>
-    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyeQwnhmec-rHGxuZhbwf7a7mOFdmE-RmobkTxeEpO6ASf44_9BC-WrZDYB2UPka1LB/exec";
-
-    const MENU_CATEGORIES = [
-      {
-        title: "🥤 Smoothies 果昔口味與基底",
-        items: ["香草", "草莓", "巧克力", "芒果", "咖啡", "奶香曲奇", "薄荷巧克力", "穀片", "寒天波波"]
-      },
-      {
-        title: "🥣 優格燕麥果昔品項",
-        items: ["草莓甜心", "光芒閃閃", "可可旋風", "天作芝核", "啡你莫屬", "薄荷夏綠蒂"]
-      },
-      {
-        title: "🍵 機能茶系列與口味",
-        items: ["纖體瘦瘦茶", "原味檸香", "覆盆子", "養生綠茶", "原味", "石榴", "放鬆舒活茶", "活力聰明茶"]
-      },
-      {
-        title: "⚡ 機能飲系列與口味",
-        items: ["高蛋白咖啡", "拿鐵", "摩卡", "運動機能高蛋白飲", "蘆薈氣泡飲", "葡萄", "強健保護飲", "蜂蜜香橙"]
-      },
-      {
-        title: "➕ 加料加購項目",
-        items: ["原味寒天波波", "黑糖寒天波波", "加麥片/穀片", "環保外帶瓶"]
-      }
-    ];
-
-    let stockStatus = {};
-    let knownOrderTimestamps = new Set();
-    let isFirstLoad = true;
-
-    function formatDisplayTime(timeStr) {
-      const d = new Date(timeStr);
-      if (isNaN(d.getTime())) return timeStr;
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
-
-function speakOrder(orderNo, details, price) {
-      const volume = document.getElementById('volume').value;
-      
-      // 清除內容與金額中的 $ 符號，並明確加上「元」
-      const cleanDetails = details.replace(/\$/g, '');
-      const cleanPrice = String(price).replace(/\$/g, '');
-      
-      const textToSpeak = `號碼 ${orderNo}，新訂單！內容是：${cleanDetails}。總金額為：${cleanPrice} 元。`;
-      
-      const msg = new SpeechSynthesisUtterance(textToSpeak);
-      msg.volume = volume;
-      msg.lang = 'zh-TW';
-      window.speechSynthesis.speak(msg);
-    }
-
-    function playAlertAndSpeak(orderNo, details, price) {
-      const volume = document.getElementById('volume').value;
-      const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-      audio.volume = volume;
-      audio.play().then(() => {
-        setTimeout(() => speakOrder(orderNo, details, price), 800);
-      }).catch(e => {
-        speakOrder(orderNo, details, price);
-      });
-    }
-
-    function loadStockAndOrders() {
-      fetch(GAS_WEBAPP_URL)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === "success") {
-            document.getElementById('sync-status').innerText = "🟢 正常同步中";
-            if (res.data) {
-              stockStatus = res.data;
-              renderStockList();
+        // 已將 8 種果昔口味完整補齊
+        const MENU_CATEGORIES = [
+            { 
+                title: "🥤 Smoothies 果昔口味與基底", 
+                items: ["香草", "草莓", "巧克力", "芒果", "咖啡", "奶香", "曲奇", "薄荷巧克力", "穀片", "寒天波波"] 
+            },
+            { 
+                title: "🥣 優格燕麥果昔品項", 
+                items: ["草莓甜心", "光芒閃閃", "可可旋風", "天作芝核", "啡你莫屬", "薄荷夏綠蒂"] 
+            },
+            { 
+                title: "🍵 機能茶系列與口味", 
+                items: ["纖體瘦瘦茶", "原味檸香", "覆盆子", "養生綠茶", "原味", "石榴", "放鬆舒活茶", "活力聰明茶"] 
+            },
+            { 
+                title: "⚡ 機能飲系列與口味", 
+                items: ["高蛋白咖啡", "拿鐵", "摩卡", "運動機能高蛋白飲", "蘆薈氣泡飲", "葡萄", "強健保護飲", "蜂蜜香橙"] 
+            },
+            { 
+                title: "➕ 加料加購項目", 
+                items: ["原味寒天波波", "黑糖寒天波波", "加麥片/穀片", "環保外帶瓶"] 
             }
-            if (res.orders) {
-              renderOrders(res.orders);
+        ];
+
+        let stockStatus = {};
+        let knownOrderTimestamps = new Set();
+        let isFirstLoad = true;
+
+        function formatDisplayTime(timeStr) {
+            const d = new Date(timeStr);
+            if (isNaN(d.getTime())) return timeStr;
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+
+        function speakOrder(orderNo, details, price) {
+            const volume = document.getElementById('volume').value;
+            const cleanDetails = details.replace(/\$/g, '');
+            const cleanPrice = String(price).replace(/\$/g, '');
+            const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}。總金額為： ${cleanPrice} 元。`;
+            const msg = new SpeechSynthesisUtterance(textToSpeak);
+            msg.volume = volume;
+            msg.lang = 'zh-TW';
+            window.speechSynthesis.speak(msg);
+        }
+
+        function playAlertAndSpeak(orderNo, details, price) {
+            const volume = document.getElementById('volume').value;
+            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+            audio.volume = volume;
+            audio.play().then(() => {
+                setTimeout(() => speakOrder(orderNo, details, price), 800);
+            }).catch(e => {
+                speakOrder(orderNo, details, price);
+            });
+        }
+
+        function loadStockAndOrders() {
+            fetch(GAS_WEBAPP_URL)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === "success") {
+                        document.getElementById('sync-status').innerText = "🟢 正常同步中";
+                        if (res.data) {
+                            stockStatus = res.data;
+                            renderStockList();
+                        }
+                        if (res.orders) {
+                            renderOrders(res.orders);
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("連線錯誤", err);
+                    document.getElementById('sync-status').innerText = "🔴 連線異常";
+                });
+        }
+
+        function renderOrders(orders) {
+            const container = document.getElementById('order-container');
+            const oneHourAgo = new Date().getTime() - (60 * 60 * 1000);
+            const recentOrders = orders.filter(order => {
+                const orderTime = new Date(order.time).getTime();
+                return isNaN(orderTime) || orderTime >= oneHourAgo;
+            });
+
+            if (recentOrders.length === 0) {
+                container.innerHTML = '<div class="empty-state">目前一小時內無新訂單</div>';
+                return;
             }
-          }
-        })
-        .catch(err => {
-          console.error("連線錯誤", err);
-          document.getElementById('sync-status').innerText = "🔴 連線異常";
-        });
-    }
 
-function renderOrders(orders) {
-      const container = document.getElementById('order-container');
-      const oneHourAgo = new Date().getTime() - (60 * 60 * 1000);
-      
-      const recentOrders = orders.filter(order => {
-        const orderTime = new Date(order.time).getTime();
-        return isNaN(orderTime) || orderTime >= oneHourAgo;
-      });
+            recentOrders.sort((a, b) => new Date(b.time) - new Date(a.time));
+            let html = "";
 
-      if (recentOrders.length === 0) {
-        container.innerHTML = '<div class="empty-state">目前一小時內無新訂單</div>';
-        return;
-      }
+            recentOrders.forEach(order => {
+                const orderKey = `${order.time}_${order.orderNo}`;
+                if (!isFirstLoad && !knownOrderTimestamps.has(orderKey)) {
+                    playAlertAndSpeak(order.orderNo, order.details, order.totalPrice);
+                }
+                knownOrderTimestamps.add(orderKey);
 
-      recentOrders.sort((a, b) => new Date(b.time) - new Date(a.time));
+                const cleanDetailsForDisplay = (order.details || '').replace(/\(\$(\d+)\)/g, '($1元)');
 
-      let html = "";
-      recentOrders.forEach(order => {
-        const orderKey = `${order.time}_${order.orderNo}`;
-        if (!isFirstLoad && !knownOrderTimestamps.has(orderKey)) {
-          playAlertAndSpeak(order.orderNo, order.details, order.totalPrice);
+                html += `
+                    <div class="order-card">
+                        <div class="order-header-row">
+                            <span class="order-badge">🎫 取餐號碼：${order.orderNo || '無單號'}</span>
+                            <span>⏰ 取餐：${order.pickupTime || '現場即取'}</span>
+                        </div>
+                        <div style="font-size:12px; color:#888; margin-bottom:6px;">🕒 下單時間：${formatDisplayTime(order.time)}</div>
+                        <div class="cust-info-box">
+                            <span class="cust-name">👤 顧客：${order.name || '未填寫'}</span>
+                            <span class="cust-phone">📞 電話：${order.phone || '未填寫'}</span>
+                        </div>
+                        <div class="order-details">📋 餐點內容：<br>${cleanDetailsForDisplay}</div>
+                        <div class="order-footer">
+                            <span>📝 備註：${order.notes || '無'}</span>
+                            <span class="order-price">💰 總金額：${order.totalPrice} 元</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            isFirstLoad = false;
         }
-        knownOrderTimestamps.add(orderKey);
 
-        // 自動將明細中的 ($數字) 替換為 (數字元) 讓畫面更清爽
-        const cleanDetailsForDisplay = (order.details || '').replace(/\(\$(\d+)\)/g, '($1元)');
+        function renderStockList() {
+            const container = document.getElementById('stock-list-container');
+            let html = "";
 
-        html += `
-          <div class="order-card">
-            <div class="order-header-row">
-              <span class="order-badge">🎫 取餐號碼：${order.orderNo || '無單號'}</span>
-              <span>⏰ 取餐：${order.pickupTime || '現場即取'}</span>
-            </div>
-            <div style="font-size:12px; color:#888; margin-bottom:6px;">🕒 下單時間：${formatDisplayTime(order.time)}</div>
-            <div class="cust-info-box">
-              <span class="cust-name">👤 顧客：${order.name || '未填寫'}</span>
-              <span class="cust-phone">📞 電話：${order.phone || '未填寫'}</span>
-            </div>
-            <div class="order-details">📋 餐點內容：<br>${cleanDetailsForDisplay}</div>
-            <div class="order-footer">
-              <span>📝 備註：${order.notes || '無'}</span>
-              <span class="order-price">💰 總金額：${order.totalPrice} 元</span>
-            </div>
-          </div>
-        `;
-      });
+            MENU_CATEGORIES.forEach(cat => {
+                html += `<div class="category-group"><div class="category-title">${cat.title}</div>`;
+                cat.items.forEach(item => {
+                    const isAvail = stockStatus[item] !== false;
+                    html += `
+                        <div class="stock-row">
+                            <span>${item}</span>
+                            <button class="switch-btn ${isAvail ? 'btn-available' : 'btn-soldout'}" onclick="toggleStock('${item}', ${!isAvail})">
+                                ${isAvail ? '供應中' : '已售完'}
+                            </button>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            });
 
-      container.innerHTML = html;
-      isFirstLoad = false;
-    }
-
-    function renderStockList() {
-      const container = document.getElementById('stock-list-container');
-      let html = "";
-
-      MENU_CATEGORIES.forEach(cat => {
-        html += `<div class="category-group"><div class="category-title">${cat.title}</div>`;
-        cat.items.forEach(item => {
-          const isAvail = stockStatus[item] !== false;
-          html += `
-            <div class="stock-row">
-              <span>${item}</span>
-              <button class="switch-btn ${isAvail ? 'btn-available' : 'btn-soldout'}" onclick="toggleStock('${item}', ${!isAvail})">
-                ${isAvail ? '供應中' : '已售完'}
-              </button>
-            </div>
-          `;
-        });
-        html += `</div>`;
-      });
-
-      container.innerHTML = html;
-    }
-
-    function toggleStock(itemName, newStatus) {
-      const pwd = document.getElementById('adminPwd').value.trim();
-      if (!pwd) {
-        alert("請輸入管理密碼！");
-        return;
-      }
-
-      fetch(GAS_WEBAPP_URL, {
-        method: "POST",
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: "updateStatus",
-          itemName: itemName,
-          isAvailable: newStatus,
-          password: pwd
-        })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === "success") {
-          stockStatus[itemName] = newStatus;
-          renderStockList();
-        } else {
-          alert(res.message || "更新失敗");
+            container.innerHTML = html;
         }
-      })
-      .catch(err => alert("網路連線錯誤"));
-    }
 
-    document.body.onclick = () => {
-      console.log("音效權限已就緒");
-    };
+        function toggleStock(itemName, newStatus) {
+            const pwd = document.getElementById('adminPwd').value.trim();
+            if (!pwd) {
+                alert("請輸入管理密碼！");
+                return;
+            }
 
-    loadStockAndOrders();
-    setInterval(loadStockAndOrders, 6000);
-  </script>
+            fetch(GAS_WEBAPP_URL, {
+                method: "POST",
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: "updateStatus",
+                    itemName: itemName,
+                    isAvailable: newStatus,
+                    password: pwd
+                })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === "success") {
+                    stockStatus[itemName] = newStatus;
+                    renderStockList();
+                } else {
+                    alert(res.message || "更新失敗");
+                }
+            })
+            .catch(err => alert("網路連線錯誤"));
+        }
+
+        document.body.onclick = () => {
+            console.log("音效權限已就緒");
+        };
+
+        loadStockAndOrders();
+        setInterval(loadStockAndOrders, 6000);
+    </script>
 </body>
 </html>
