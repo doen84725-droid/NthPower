@@ -7,7 +7,594 @@
   
   <link rel="icon" type="image/png" href="https://i.meee.com.tw/fwAEuJj.png" />
   <link rel="apple-touch-icon" href="https://i.meee.com.tw/fwAEuJj.png" />
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>N次方 Nutrition Bar - 線上點餐</title>
+    <link rel="icon" type="image/png" href="https://i.meee.com.tw/fwAEuJj.png" />
+    <link rel="apple-touch-icon" href="https://i.meee.com.tw/fwAEuJj.png" />
+    <style>
+        :root {
+            --primary: #8e7368;       /* 莫蘭迪粉棕 */
+            --primary-light: #f7f2ef; /* 奶油米白背景 */
+            --accent: #b07d62;        /* 暖調焦糖棕重點色 */
+            --bg: #faf7f5;            /* 整體輕柔米白底色 */
+            --card-bg: #ffffff;
+            --text-main: #4a403b;     /* 柔和深可可主字色 */
+            --text-muted: #8c7b73;    /* 溫暖灰棕次要字色 */
+            --border: #eadcd6;        /* 柔和粉棕邊框 */
+        }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 90px; }
+
+        header { background: #fff; padding: 16px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(142,115,104,0.06); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .header-brand { display: flex; align-items: center; gap: 12px; }
+        .header-logo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); }
+        .brand-title { font-size: 1.15rem; font-weight: 700; color: var(--primary); letter-spacing: 0.5px; }
+        .brand-subtitle { font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; }
+
+        .btn-view-ticket { background: #fff5f2; color: var(--accent); border: 1.5px solid var(--accent); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 4px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+        .menu-container { padding: 20px 16px; max-width: 600px; margin: 0 auto; }
+        
+        .section-title { font-size: 1.1rem; font-weight: 700; margin: 26px 0 14px; color: var(--primary); display: flex; align-items: center; gap: 8px; border-bottom: 1.5px dashed var(--border); padding-bottom: 6px; }
+        .section-title::before { content: "🌾"; font-size: 0.9rem; }
+
+        .menu-card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 14px rgba(142,115,104,0.04); border: 1px solid var(--border); transition: transform 0.2s; }
+        .menu-card:active { transform: scale(0.98); }
+
+        .item-info { flex: 1; padding-right: 12px; }
+        .item-name { font-size: 1rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+        .item-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; line-height: 1.4; }
+        .item-price { font-size: 1.05rem; font-weight: 800; color: var(--accent); }
+
+        .btn-add { background: var(--primary-light); color: var(--primary); border: 1.5px solid var(--primary); padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .btn-add:active { background: var(--primary); color: #fff; }
+
+        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 14px 22px; box-shadow: 0 -4px 20px rgba(142,115,104,0.08); display: flex; justify-content: space-between; align-items: center; z-index: 150; max-width: 600px; margin: 0 auto; border-top: 1px solid var(--border); }
+        .cart-info { cursor: pointer; }
+        .cart-count { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; }
+        .cart-total { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+
+        .btn-checkout { background: var(--primary); color: #fff; border: none; padding: 12px 28px; border-radius: 25px; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(142,115,104,0.3); }
+        .btn-checkout:disabled { background: #dcd6d0; box-shadow: none; cursor: not-allowed; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(74,64,59,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 200; backdrop-filter: blur(2px); }
+        .modal-overlay.active { display: flex; }
+
+        .modal-content { background: #fff; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.25s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--primary); }
+        .btn-close { background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+
+        .option-group { margin-bottom: 18px; }
+        .option-label { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; display: block; color: var(--text-main); }
+        .option-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { padding: 8px 14px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 0.85rem; cursor: pointer; background: #fff; color: var(--text-main); font-weight: 500; transition: all 0.2s; }
+        .chip.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 700; }
+
+        .modal-qty-row { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .qty-counter { display: flex; align-items: center; gap: 12px; }
+        .qty-btn { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border); background: #faf7f5; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+
+        .btn-modal-submit { width: 100%; background: var(--primary); color: #fff; padding: 14px; border-radius: 14px; border: none; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(142,115,104,0.25); }
+        
+        .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .cart-item-title { font-weight: 700; font-size: 0.95rem; color: var(--text-main); }
+        .cart-item-opts { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border); font-size: 0.95rem; outline: none; background: #faf7f5; color: var(--text-main); }
+
+        .card-select-grid { display: flex; gap: 10px; }
+        .select-card { flex: 1; padding: 14px 10px; border-radius: 14px; border: 1.5px solid var(--border); background: #faf7f5; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .select-card .card-main-text { font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
+        .select-card .card-sub-text { font-size: 0.74rem; color: var(--text-muted); }
+        .select-card.selected { border-color: var(--primary); background: var(--primary-light); }
+        .select-card.selected .card-main-text, .select-card.selected .card-sub-text { color: var(--primary); }
+
+        .success-modal { text-align: center; padding: 25px 15px; }
+        .ticket-box { background: var(--primary-light); border: 2px dashed var(--accent); border-radius: 16px; padding: 22px 16px; margin: 20px 0; }
+        .ticket-number { font-size: 3.2rem; font-weight: 900; color: var(--accent); letter-spacing: 2px; margin: 8px 0; }
+        .loading-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <img src="https://i.meee.com.tw/fwAEuJj.png" alt="N次方 Logo" class="header-logo" />
+            <div>
+                <div class="brand-title">N次方 Nutrition Bar</div>
+                <div class="brand-subtitle">🌾 健康・美味・質感生活</div>
+            </div>
+        </div>
+        <button id="btnViewTicket" class="btn-view-ticket" onclick="openTicketModal()">
+            🎫 <span>我的號碼</span>
+        </button>
+    </header>
+
+    <main class="menu-container" id="dynamic-menu-container">
+        <div class="loading-state">🌱 正在載入最新質感菜單...</div>
+    </main>
+
+    <div class="cart-bar">
+        <div class="cart-info" onclick="openCartModal()">
+            <div class="cart-count">已選 <span id="cartTotalQty">0</span> 杯 (點此查看明細)</div>
+            <div class="cart-total">$<span id="cartTotalPrice">0</span></div>
+        </div>
+        <button id="btnProceed" class="btn-checkout" disabled onclick="openCheckoutModal()">去結帳 ➔</button>
+    </div>
+
+    <!-- 客製選項彈窗 -->
+    <div id="optionModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="optModalTitle">客製選項</div>
+                <button class="btn-close" onclick="closeModal('optionModal')">&times;</button>
+            </div>
+            <div id="optModalBody"></div>
+            <div class="modal-qty-row">
+                <span style="font-weight:700;">數量</span>
+                <div class="qty-counter">
+                    <button class="qty-btn" onclick="updateModalQty(-1)">-</button>
+                    <span id="modalItemQty" style="font-weight:700; font-size:1.1rem;">1</span>
+                    <button class="qty-btn" onclick="updateModalQty(1)">+</button>
+                </div>
+            </div>
+            <button class="btn-modal-submit" onclick="confirmAddToCart()">加入購物車</button>
+        </div>
+    </div>
+
+    <!-- 購物車明細彈窗 -->
+    <div id="cartModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">已選餐點明細</div>
+                <button class="btn-close" onclick="closeModal('cartModal')">&times;</button>
+            </div>
+            <div id="cartDetailsList" style="margin-bottom: 20px;"></div>
+            <button class="btn-modal-submit" onclick="closeModal('cartModal'); openCheckoutModal();">確認餐點，前往結帳</button>
+        </div>
+    </div>
+
+    <!-- 結帳填寫資料彈窗 -->
+    <div id="checkoutModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">填寫訂購與取餐資料</div>
+                <button class="btn-close" onclick="closeModal('checkoutModal')">&times;</button>
+            </div>
+            <form id="orderForm" onsubmit="handleOrderSubmit(event)">
+                <div class="form-group">
+                    <label>姓名 *</label>
+                    <input type="text" id="custName" required placeholder="請輸入稱呼" />
+                </div>
+                <div class="form-group">
+                    <label>聯絡電話 *</label>
+                    <input type="tel" id="custPhone" required placeholder="09xx-xxx-xxx" />
+                </div>
+                <div class="form-group">
+                    <label>預計取餐時間 *</label>
+                    <div class="card-select-grid">
+                        <div id="cardPickupNow" class="select-card selected" onclick="setPickupTimeType('now')">
+                            <span class="card-main-text">⚡ 現在取餐</span>
+                            <span class="card-sub-text">現場現點現做</span>
+                        </div>
+                        <div id="cardPickupLater" class="select-card" onclick="setPickupTimeType('later')">
+                            <span class="card-main-text">🕒 稍後預約</span>
+                            <span class="card-sub-text">指定時間取餐</span>
+                        </div>
+                    </div>
+                    <input type="time" id="custTime" style="display: none; margin-top: 10px;" />
+                </div>
+                <div class="form-group">
+                    <label>付款方式 *</label>
+                    <div class="card-select-grid">
+                        <div id="payCardCash" class="select-card selected" onclick="setPaymentMethod('現金 (請至櫃台付現)')">
+                            <span class="card-main-text">💵 現金付款</span>
+                            <span class="card-sub-text">請至櫃台付現</span>
+                        </div>
+                        <div id="payCardOnline" class="select-card" onclick="setPaymentMethod('手機支付 (請掃桌面付款碼支付並出示)')">
+                            <span class="card-main-text">📱 手機支付</span>
+                            <span class="card-sub-text">掃桌面付款碼出示</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>備註需求</label>
+                    <textarea id="custNotes" rows="2" placeholder="例如：少冰、不要吸管..."></textarea>
+                </div>
+                <button type="submit" id="btnSubmitOrder" class="btn-modal-submit">確認送出訂單 ($<span id="checkoutTotalAmount">0</span>)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 成功取餐號碼牌彈窗 -->
+    <div id="ticketModal" class="modal-overlay">
+        <div class="modal-content success-modal">
+            <h2 style="color: var(--primary);">✨ 訂單送出成功！</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 6px;">店家已收到您的訂單，正在為您精心準備。</p>
+            <div class="ticket-box">
+                <div style="font-size: 14px; font-weight: bold; color: var(--accent);">您的專屬取餐號碼</div>
+                <div class="ticket-number" id="displayTicketNo">#000</div>
+                <div id="ticketOrderDetails" style="font-size: 13px; color: var(--text-main); margin-top: 8px; line-height: 1.5; text-align: left; background: #fff; padding: 12px; border-radius: 10px; border: 1px solid var(--border);"></div>
+            </div>
+            <button class="btn-modal-submit" onclick="closeModal('ticketModal')">好的，我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        let dynamicMenuData = []; 
+        let globalStockStatus = {}; 
+        let cart = []; 
+        let currentCustomizingItem = null; 
+        let modalQty = 1; 
+        let pickupTimeType = 'now'; 
+        let selectedPayment = '現金 (請至櫃台付現)'; 
+        
+        // 已填入您剛剛部署成功的最新網頁應用程式網址
+        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypKhDbx5tByQ5UYVd3u9GQ7U_hxuP6HvUfGnIaNcRU6gDUT7jbDyf-OSB_HUUAQ0Op/exec";
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchStockAndRender();
+            checkSavedTicket();
+        });
+
+        function checkSavedTicket() {
+            const savedTicket = localStorage.getItem('nth_last_ticket');
+            if (savedTicket) {
+                document.getElementById('btnViewTicket').style.display = 'inline-flex';
+            }
+        }
+
+        function openTicketModal() {
+            const savedTicket = JSON.parse(localStorage.getItem('nth_last_ticket') || '{}');
+            if (savedTicket.orderNo) {
+                document.getElementById('displayTicketNo').innerText = savedTicket.orderNo;
+                document.getElementById('ticketOrderDetails').innerHTML = `
+                    <div><strong>下單時間：</strong>${savedTicket.time || '剛剛'}</div>
+                    <div><strong>取餐時間：</strong>${savedTicket.pickupTime || '現場即取'}</div>
+                    <div><strong>總計金額：</strong>$${savedTicket.totalPrice} 元</div>
+                `;
+                openModal('ticketModal');
+            }
+        }
+
+        function fetchStockAndRender() {
+            fetch(GAS_WEBAPP_URL)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === "success") {
+                        if (res.data) globalStockStatus = res.data;
+                        if (res.menu) {
+                            dynamicMenuData = res.menu;
+                            renderDynamicMenu(dynamicMenuData);
+                        }
+                    } else {
+                        document.getElementById('dynamic-menu-container').innerHTML = '<div class="loading-state">目前無供應項目</div>';
+                    }
+                })
+                .catch(err => {
+                    console.log("動態菜單載入失敗", err);
+                    document.getElementById('dynamic-menu-container').innerHTML = '<div class="loading-state">連線異常，請重新整理頁面</div>';
+                });
+        }
+
+        function renderDynamicMenu(menuItems) {
+            const container = document.getElementById('dynamic-menu-container');
+            container.innerHTML = '';
+
+            let grouped = {};
+            menuItems.forEach(item => {
+                // 自動避開區段標題含有「加料」或「口味」的項目，不讓它們在主畫面上長出卡片
+                const isHiddenSection = item.sectionTitle && (item.sectionTitle.includes('加料') || item.sectionTitle.includes('口味'));
+
+                if (item.status === "供應中" && !isHiddenSection) {
+                    if (!grouped[item.sectionTitle]) {
+                        grouped[item.sectionTitle] = [];
+                    }
+                    grouped[item.sectionTitle].push(item);
+                }
+            });
+
+            if (Object.keys(grouped).length === 0) {
+                container.innerHTML = '<div class="loading-state">目前所有品項皆已售完休息中</div>';
+                return;
+            }
+
+            for (let sectionTitle in grouped) {
+                let sectionHtml = `<div class="section-title">${sectionTitle}</div>`;
+
+                grouped[sectionTitle].forEach(item => {
+                    let imageTag = item.imageUrl ? 
+                        `<img src="${item.imageUrl}" style="width:60px; height:60px; border-radius:12px; object-fit:cover; margin-right:12px; flex-shrink:0; border:1px solid var(--border);">` : '';
+
+                    let actionOnClick = `openDynamicOptionModal(${JSON.stringify(item).replace(/"/g, '&quot;')})`;
+
+                    sectionHtml += `
+                        <div class="menu-card" style="display: flex; align-items: center;">
+                            ${imageTag}
+                            <div class="item-info">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-desc">${item.desc || ''}</div>
+                                <div class="item-price">$${item.price}</div>
+                            </div>
+                            <button class="btn-add" onclick="${actionOnClick}">選擇 ＋</button>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML += sectionHtml;
+            }
+        }
+
+        // 內部彈窗選項：讀取試算表的 flavor、temp、addons 欄位，並自動與後台庫存狀態連動
+        function openDynamicOptionModal(itemObj) {
+            modalQty = 1;
+            document.getElementById('modalItemQty').innerText = modalQty;
+            const modalBody = document.getElementById('optModalBody');
+            modalBody.innerHTML = '';
+            
+            currentCustomizingItem = itemObj;
+            document.getElementById('optModalTitle').innerText = `${itemObj.name} ($${itemObj.price})`;
+
+            let html = '';
+
+            // 1. 口味選項
+            if (itemObj.flavor && itemObj.flavor.trim() !== '') {
+                let rawFlavors = itemObj.flavor.split('/').map(f => f.trim());
+                let validFlavors = rawFlavors.filter(f => globalStockStatus[f] !== false && globalStockStatus[f] !== "已售完");
+
+                if (validFlavors.length > 0) {
+                    html += `
+                        <div class="option-group">
+                            <label class="option-label">選擇口味 (必選 1 項)</label>
+                            <div class="option-chips" id="flavorChips">
+                                ${validFlavors.map(f => `<button type="button" class="chip" onclick="selectSingleChip(this)">${f}</button>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 2. 冷熱溫度選項
+            if (itemObj.temp && itemObj.temp.trim() !== '') {
+                let rawTemps = itemObj.temp.split('/').map(t => t.trim());
+                let validTemps = rawTemps.filter(t => globalStockStatus[t] !== false && globalStockStatus[t] !== "已售完");
+
+                if (validTemps.length > 0) {
+                    html += `
+                        <div class="option-group">
+                            <label class="option-label">溫度選擇 (冷/熱)</label>
+                            <div class="option-chips" id="tempChips">
+                                ${validTemps.map(t => `<button type="button" class="chip" onclick="selectSingleChip(this)">${t}</button>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 3. 加料選項
+            if (itemObj.addons && itemObj.addons.trim() !== '') {
+                let rawAddons = itemObj.addons.split('/').map(a => a.trim());
+                let validAddons = rawAddons.filter(a => globalStockStatus[a] !== false && globalStockStatus[a] !== "已售完");
+
+                if (validAddons.length > 0) {
+                    html += `
+                        <div class="option-group">
+                            <label class="option-label">加料與需求 (可複選)</label>
+                            <div class="option-chips" id="addonChips">
+                                ${validAddons.map(a => `<button type="button" class="chip" data-price="10" onclick="toggleMultiChip(this)">${a} (+$10)</button>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            if (!html) {
+                html = `<p style="text-align:center; color:var(--text-muted); padding:10px;">此品項為固定規格，直接點擊加入即可！</p>`;
+            }
+
+            modalBody.innerHTML = html;
+            autoSelectFirstChip('#flavorChips');
+            autoSelectFirstChip('#tempChips');
+            openModal('optionModal');
+        }
+
+        function autoSelectFirstChip(sel) {
+            const el = document.querySelector(`${sel} .chip`);
+            if (el) el.classList.add('selected');
+        }
+
+        function selectSingleChip(el) {
+            el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function toggleMultiChip(el) {
+            el.classList.toggle('selected');
+        }
+
+        function updateModalQty(delta) {
+            modalQty = Math.max(1, modalQty + delta);
+            document.getElementById('modalItemQty').innerText = modalQty;
+        }
+
+        function confirmAddToCart() {
+            const selectedOpts = [];
+            let extraPrice = 0;
+
+            const flavorChip = document.querySelector('#flavorChips .chip.selected');
+            if (flavorChip) selectedOpts.push(`口味: ${flavorChip.innerText}`);
+
+            const tempChip = document.querySelector('#tempChips .chip.selected');
+            if (tempChip) selectedOpts.push(`溫度: ${tempChip.innerText}`);
+
+            document.querySelectorAll('#addonChips .chip.selected').forEach(chip => {
+                let cleanAddonName = chip.innerText.split('(')[0].trim();
+                selectedOpts.push(cleanAddonName);
+                extraPrice += 10;
+            });
+
+            const singlePrice = Number(currentCustomizingItem.price) + extraPrice;
+            cart.push({
+                id: Date.now(),
+                name: currentCustomizingItem.name,
+                options: selectedOpts.join(', ') || '標準',
+                unitPrice: singlePrice,
+                qty: modalQty,
+                total: singlePrice * modalQty
+            });
+
+            closeModal('optionModal');
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + item.total, 0);
+            document.getElementById('cartTotalQty').innerText = totalQty;
+            document.getElementById('cartTotalPrice').innerText = totalPrice;
+            document.getElementById('checkoutTotalAmount').innerText = totalPrice;
+            document.getElementById('btnProceed').disabled = totalQty === 0;
+
+            const listContainer = document.getElementById('cartDetailsList');
+            if (cart.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:20px;">購物車目前是空的</p>';
+            } else {
+                listContainer.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item-row">
+                        <div style="flex: 1; padding-right: 10px;">
+                            <div class="cart-item-title">${item.name} x ${item.qty}杯</div>
+                            <div class="cart-item-opts">${item.options}</div>
+                        </div>
+                        <div style="font-weight: 700; color: var(--accent); margin-right: 14px; white-space: nowrap;">$${item.total}</div>
+                        <button type="button" onclick="removeFromCart(${index})" style="background: #fff0f0; color: #e53e3e; border: 1px solid #ffcccc; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✕</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+            if (cart.length === 0) closeModal('cartModal');
+        }
+
+        function setPickupTimeType(type) {
+            pickupTimeType = type;
+            const nowCard = document.getElementById('cardPickupNow');
+            const laterCard = document.getElementById('cardPickupLater');
+            const timeInput = document.getElementById('custTime');
+            if (type === 'now') {
+                nowCard.classList.add('selected');
+                laterCard.classList.remove('selected');
+                timeInput.style.display = 'none';
+            } else {
+                laterCard.classList.add('selected');
+                nowCard.classList.remove('selected');
+                timeInput.style.display = 'block';
+                timeInput.required = true;
+            }
+        }
+
+        function setPaymentMethod(method) {
+            selectedPayment = method;
+            const cardCash = document.getElementById('payCardCash');
+            const cardOnline = document.getElementById('payCardOnline');
+            if (method.includes('現金')) {
+                cardCash.classList.add('selected');
+                cardOnline.classList.remove('selected');
+            } else {
+                cardOnline.classList.add('selected');
+                cardCash.classList.remove('selected');
+            }
+        }
+
+        function generateOrderNo() {
+            const rand = Math.floor(100 + Math.random() * 900);
+            return `#${rand}`;
+        }
+
+        function handleOrderSubmit(e) {
+            e.preventDefault();
+            if (cart.length === 0) return alert('請先選擇餐點！');
+            
+            const submitBtn = document.getElementById('btnSubmitOrder');
+            submitBtn.disabled = true;
+            submitBtn.innerText = '訂單傳送中...';
+
+            const orderNo = generateOrderNo();
+            const orderDetailsText = cart.map((item, idx) => `${idx + 1}. ${item.name} x ${item.qty}杯 ($${item.total})\n   └ ${item.options}`).join('\n');
+            const pickupTimeVal = pickupTimeType === 'now' ? '現場即取' : document.getElementById('custTime').value;
+            const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
+
+            const payload = {
+                orderNo: orderNo,
+                name: document.getElementById('custName').value,
+                phone: document.getElementById('custPhone').value,
+                pickupTime: pickupTimeVal,
+                paymentMethod: selectedPayment,
+                orderDetails: orderDetailsText,
+                totalPrice: totalAmount,
+                notes: document.getElementById('custNotes').value
+            };
+
+            fetch(GAS_WEBAPP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                const ticketInfo = {
+                    orderNo: orderNo,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    pickupTime: pickupTimeVal,
+                    totalPrice: totalAmount
+                };
+                localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
+
+                cart = [];
+                updateCartUI();
+                document.getElementById('orderForm').reset();
+                closeModal('checkoutModal');
+
+                document.getElementById('btnViewTicket').style.display = 'inline-flex';
+                document.getElementById('displayTicketNo').innerText = orderNo;
+                document.getElementById('ticketOrderDetails').innerHTML = `
+                    <div><strong>下單時間：</strong>${ticketInfo.time}</div>
+                    <div><strong>取餐時間：</strong>${ticketInfo.pickupTime}</div>
+                    <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
+                `;
+                openModal('ticketModal');
+            })
+            .catch(err => {
+                document.getElementById('displayTicketNo').innerText = orderNo;
+                openModal('ticketModal');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '確認送出訂單';
+            });
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function openCartModal() { if (cart.length > 0) openModal('cartModal'); }
+        function openCheckoutModal() { closeModal('cartModal'); openModal('checkoutModal'); }
+    </script>
+</body>
+</html>
+  
   <style>
     :root {
       --primary: #4a6b5d;
