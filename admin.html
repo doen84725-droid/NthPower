@@ -267,6 +267,11 @@
 
         // 💡 語音播報功能
         function speakOrder(orderNo, details, price) {
+            // 💡 確保瀏覽器的語音引擎沒有被暫停或凍結
+            if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
+            window.speechSynthesis.cancel(); // 消除堆疊
             const volume = document.getElementById('volume').value;
             const cleanDetails = details.replace(/\$/g, '');
             const cleanPrice = String(price).replace(/\$/g, '');
