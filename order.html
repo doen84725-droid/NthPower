@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="https://i.meee.com.tw/fwAEuJj.png" />
     <link rel="apple-touch-icon" href="https://i.meee.com.tw/fwAEuJj.png" />
     <style>
-:root {
+        :root {
             --primary: #8e7368;       /* 莫蘭迪粉棕 */
             --primary-light: #f7f2ef; /* 奶油米白背景 */
             --accent: #b07d62;        /* 暖調焦糖棕重點色 */
@@ -512,15 +512,12 @@
             return `#${rand}`;
         }
 
-function handleOrderSubmit(e) {
+        function handleOrderSubmit(e) {
             e.preventDefault();
             if (cart.length === 0) return alert('請先選擇餐點！');
-
+            
             const orderNo = generateOrderNo();
-            const orderDetailsText = cart.map((item, idx) => 
-                `${idx + 1}. ${item.name} x ${item.qty}杯 ($${item.total})\n   └ ${item.options}`
-            ).join('\n');
-
+            const orderDetailsText = cart.map((item, idx) => `${idx + 1}. ${item.name} x ${item.qty}杯 ($${item.total})\n   └ ${item.options}`).join('\n');
             const pickupTimeVal = pickupTimeType === 'now' ? '現場即取' : document.getElementById('custTime').value;
             const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
 
@@ -535,14 +532,14 @@ function handleOrderSubmit(e) {
                 notes: document.getElementById('custNotes').value
             };
 
-            // 💡 關鍵修改：用 mode: 'no-cors' 在背景安靜送出給試算表，不等待回應也不會卡住
+            // 💡 背景靜默發送至試算表（無阻擋，不會卡住）
             fetch(GAS_WEBAPP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
             });
 
-            // 💡 立即儲存並彈出號碼牌，秒開不延遲
+            // 💡 立即儲存並秒開號碼牌畫面
             const ticketInfo = {
                 orderNo: orderNo,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -564,35 +561,6 @@ function handleOrderSubmit(e) {
                 <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
             `;
             openModal('ticketModal');
-        }
-            })
-            .catch(err => {
-                const ticketInfo = {
-                    orderNo: orderNo,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    pickupTime: pickupTimeVal,
-                    totalPrice: totalAmount
-                };
-                localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
-
-                cart = [];
-                updateCartUI();
-                document.getElementById('orderForm').reset();
-                closeModal('checkoutModal');
-
-                document.getElementById('btnViewTicket').style.display = 'inline-flex';
-                document.getElementById('displayTicketNo').innerText = orderNo;
-                document.getElementById('ticketOrderDetails').innerHTML = `
-                    <div><strong>下單時間：</strong>${ticketInfo.time}</div>
-                    <div><strong>取餐時間：</strong>${ticketInfo.pickupTime}</div>
-                    <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
-                `;
-                openModal('ticketModal');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerText = `確認送出訂單 ($${totalAmount})`;
-            });
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
