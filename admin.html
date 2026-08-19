@@ -249,9 +249,9 @@
         </div>
     </div>
 
-    <script>
-        // 對應您最新部署的 GAS 網址
-const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwTi8-IT-GZwMDNuAHx-lbqli30MbhiLw7YvaWOswBxhno42a2bQBNcLy-R6CG83jlI/exec;
+<script>
+        // 對應您最新部署的 GAS 網址（已補好雙引號）
+        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwTi8-IT-GZwMDNuAHx-lbqli30MbhiLw7YvaWOswBxhno42a2bQBNcLy-R6CG83jlI/exec";
 
         let stockStatus = {};
         let dynamicMenuData = [];
@@ -265,7 +265,7 @@ const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwTi8-IT-GZwMDNu
             return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
         }
 
-        // 💡 語音播報功能//
+        // 💡 語音播報功能
         function speakOrder(orderNo, details, price, notes) {
             if ('speechSynthesis' in window) {
                 if (window.speechSynthesis.paused) {
@@ -286,63 +286,64 @@ const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwTi8-IT-GZwMDNu
 
                 const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}${notesText}。總金額為： ${cleanPrice} 元。`;
                 const msg = new SpeechSynthesisUtterance(textToSpeak);
-            msg.volume = Number(volume);
-        msg.rate = 1.2; // 語速微調
+                msg.volume = Number(volume);
+                msg.rate = 1.2; // 語速微調
     
-    // 💡 自動抓取裝置內可用的中文語音，優先選擇微軟或 Google 的自然語音
-    const voices = window.speechSynthesis.getVoices();
-    const zhVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh-CN');
-    if (zhVoice) {
-        msg.voice = zhVoice;
-    }
+                // 💡 自動抓取裝置內可用的中文語音，優先選擇微軟或 Google 的自然語音
+                const voices = window.speechSynthesis.getVoices();
+                const zhVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh-CN');
+                if (zhVoice) {
+                    msg.voice = zhVoice;
+                }
 
-    window.speechSynthesis.speak(msg);
-}
-}
+                window.speechSynthesis.speak(msg);
+            }
+        }
 
-// 確保瀏覽器載入完語音清單
-if ('speechSynthesis' in window) {
-    window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-    };
-}
-// 💡 使用瀏覽器內建音效合成，百分之百穩定響起「叮咚」聲
-function playAlertAndSpeak(orderNo, details, price, notes) { // 👈 加上 notes 參數
-    try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const volume = Number(document.getElementById('volume').value);
+        // 確保瀏覽器載入完語音清單
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
 
-        // 播放「叮」高音
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5 音符
-        gain1.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start();
-        osc1.stop(audioCtx.currentTime + 0.4);
+        // 💡 使用瀏覽器內建音效合成，百分之百穩定響起「叮咚」聲
+        function playAlertAndSpeak(orderNo, details, price, notes) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const volume = Number(document.getElementById('volume').value);
 
-        // 0.3秒後播放「咚」低音
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.3); // C5 音符
-        gain2.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime + 0.3);
-        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(audioCtx.currentTime + 0.3);
-        osc2.stop(audioCtx.currentTime + 0.8);
+                // 播放「叮」高音
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5 音符
+                gain1.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start();
+                osc1.stop(audioCtx.currentTime + 0.4);
 
-    } catch (e) {
-        console.log("音效合成略過", e);
-    }
+                // 0.3秒後播放「咚」低音
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.3); // C5 音符
+                gain2.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime + 0.3);
+                gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.start(audioCtx.currentTime + 0.3);
+                osc2.stop(audioCtx.currentTime + 0.8);
 
-    // 叮咚響完後，無縫接軌語音播報（把 notes 帶進去）
-    setTimeout(() => speakOrder(orderNo, details, price, notes), 900);
-}
+            } catch (e) {
+                console.log("音效合成略過", e);
+            }
+
+            // 叮咚響完後，無縫接軌語音播報（已成功帶入 notes 參數）
+            setTimeout(() => speakOrder(orderNo, details, price, notes), 900);
+        }
 
         function loadStockAndOrders() {
             fetch(GAS_WEBAPP_URL)
@@ -387,7 +388,8 @@ function playAlertAndSpeak(orderNo, details, price, notes) { // 👈 加上 note
             recentOrders.forEach(order => {
                 const orderKey = `${order.time}_${order.orderNo}`;
                 if (!isFirstLoad && !knownOrderTimestamps.has(orderKey)) {
-                    playAlertAndSpeak(order.orderNo, order.details, order.totalPrice);
+                    // 💡 修正處：在此處補上 order.notes 參數，讓語音可以唸出備註
+                    playAlertAndSpeak(order.orderNo, order.details, order.totalPrice, order.notes);
                 }
                 knownOrderTimestamps.add(orderKey);
 
