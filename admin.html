@@ -226,7 +226,7 @@
             <div class="card-header">
                 <h1>🔔 即時訂單監控</h1>
                 <div class="volume-box">
-                    <label for="volume" style="font-size: 13px; font-weight: bold;">🔊 音量</label>
+                    <label for="volume" style="font-size: 13px; font-weight: bold;">🔊 音效音量</label>
                     <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7" />
                 </div>
             </div>
@@ -265,17 +265,19 @@
             return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
         }
 
+        // 💡 語音播報功能
         function speakOrder(orderNo, details, price) {
             const volume = document.getElementById('volume').value;
             const cleanDetails = details.replace(/\$/g, '');
             const cleanPrice = String(price).replace(/\$/g, '');
             const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}。總金額為： ${cleanPrice} 元。`;
             const msg = new SpeechSynthesisUtterance(textToSpeak);
-            msg.volume = volume;
+            msg.volume = Number(volume);
             msg.lang = 'zh-TW';
             window.speechSynthesis.speak(msg);
         }
 
+        // 💡 響鈴加語音播報
         function playAlertAndSpeak(orderNo, details, price) {
             const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
             audio.volume = document.getElementById('volume').value;
@@ -359,7 +361,6 @@
             isFirstLoad = false;
         }
 
-        // 直接依照試算表 C 欄（dynamicMenuData）動態渲染後台庫存按鈕，絕不重複
         function renderStockList() {
             const container = document.getElementById('stock-list-container');
             if (!dynamicMenuData || dynamicMenuData.length === 0) {
@@ -397,7 +398,7 @@
             container.innerHTML = html;
         }
 
-        // 切換庫存狀態（直接傳送，不需密碼）
+        // 切換庫存狀態（免密碼直接更新）
         function toggleStock(itemName, newStatus) {
             fetch(GAS_WEBAPP_URL, {
                 method: "POST",
@@ -421,7 +422,9 @@
         }
 
         document.body.onclick = () => {
-            console.log("音效權限已就緒");
+            if (window.speechSynthesis && window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
         };
 
         loadStockAndOrders();
