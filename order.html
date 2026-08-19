@@ -512,16 +512,15 @@
             return `#${rand}`;
         }
 
-        function handleOrderSubmit(e) {
+function handleOrderSubmit(e) {
             e.preventDefault();
             if (cart.length === 0) return alert('請先選擇餐點！');
-            
-            const submitBtn = document.getElementById('btnSubmitOrder');
-            submitBtn.disabled = true;
-            submitBtn.innerText = '訂單傳送中...';
 
             const orderNo = generateOrderNo();
-            const orderDetailsText = cart.map((item, idx) => `${idx + 1}. ${item.name} x ${item.qty}杯 ($${item.total})\n   └ ${item.options}`).join('\n');
+            const orderDetailsText = cart.map((item, idx) => 
+                `${idx + 1}. ${item.name} x ${item.qty}杯 ($${item.total})\n   └ ${item.options}`
+            ).join('\n');
+
             const pickupTimeVal = pickupTimeType === 'now' ? '現場即取' : document.getElementById('custTime').value;
             const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
 
@@ -536,34 +535,36 @@
                 notes: document.getElementById('custNotes').value
             };
 
-            // 💡 修正 POST 傳輸方式確保 GAS 能正確接收
+            // 💡 關鍵修改：用 mode: 'no-cors' 在背景安靜送出給試算表，不等待回應也不會卡住
             fetch(GAS_WEBAPP_URL, {
                 method: 'POST',
+                mode: 'no-cors',
                 body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                const ticketInfo = {
-                    orderNo: orderNo,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    pickupTime: pickupTimeVal,
-                    totalPrice: totalAmount
-                };
-                localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
+            });
 
-                cart = [];
-                updateCartUI();
-                document.getElementById('orderForm').reset();
-                closeModal('checkoutModal');
+            // 💡 立即儲存並彈出號碼牌，秒開不延遲
+            const ticketInfo = {
+                orderNo: orderNo,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                pickupTime: pickupTimeVal,
+                totalPrice: totalAmount
+            };
+            localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
 
-                document.getElementById('btnViewTicket').style.display = 'inline-flex';
-                document.getElementById('displayTicketNo').innerText = orderNo;
-                document.getElementById('ticketOrderDetails').innerHTML = `
-                    <div><strong>下單時間：</strong>${ticketInfo.time}</div>
-                    <div><strong>取餐時間：</strong>${ticketInfo.pickupTime}</div>
-                    <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
-                `;
-                openModal('ticketModal');
+            cart = [];
+            updateCartUI();
+            document.getElementById('orderForm').reset();
+            closeModal('checkoutModal');
+
+            document.getElementById('btnViewTicket').style.display = 'inline-flex';
+            document.getElementById('displayTicketNo').innerText = orderNo;
+            document.getElementById('ticketOrderDetails').innerHTML = `
+                <div><strong>下單時間：</strong>${ticketInfo.time}</div>
+                <div><strong>取餐時間：</strong>${ticketInfo.pickupTime}</div>
+                <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
+            `;
+            openModal('ticketModal');
+        }
             })
             .catch(err => {
                 const ticketInfo = {
