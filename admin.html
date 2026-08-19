@@ -227,7 +227,7 @@
                 <h1>🔔 即時訂單監控</h1>
                 <div class="volume-box">
                     <label for="volume" style="font-size: 13px; font-weight: bold;">🔊 音效音量</label>
-                    <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7" />
+                    <input type="range" id="volume" min="0" max="1" step="0.1" value="1.0" />
                 </div>
             </div>
             <div class="hint-bar">
@@ -273,10 +273,24 @@
             const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}。總金額為： ${cleanPrice} 元。`;
             const msg = new SpeechSynthesisUtterance(textToSpeak);
             msg.volume = Number(volume);
-            msg.lang = 'zh-TW';
-            window.speechSynthesis.speak(msg);
-        }
+        msg.rate = 1.0; // 語速微調
+    
+    // 💡 自動抓取裝置內可用的中文語音，優先選擇微軟或 Google 的自然語音
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh-CN');
+    if (zhVoice) {
+        msg.voice = zhVoice;
+    }
 
+    window.speechSynthesis.speak(msg);
+}
+
+// 確保瀏覽器載入完語音清單
+if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
+}
         // 💡 響鈴加語音播報
         function playAlertAndSpeak(orderNo, details, price) {
             const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
