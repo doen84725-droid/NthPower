@@ -265,17 +265,26 @@
             return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
         }
 
-        // 💡 語音播報功能
-        function speakOrder(orderNo, details, price) {
-            // 💡 確保瀏覽器的語音引擎沒有被暫停或凍結
-            if (window.speechSynthesis.paused) {
-                window.speechSynthesis.resume();
-            }
-            window.speechSynthesis.cancel(); // 消除堆疊
-            const volume = document.getElementById('volume').value;
-            const cleanDetails = details.replace(/\$/g, '');
-            const cleanPrice = String(price).replace(/\$/g, '');
-            const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}。總金額為： ${cleanPrice} 元。`;
+        // 💡 語音播報功能// 💡 語音順序調整：備註會在總金額前唸出（若是「無」或空白則自動跳過）
+        function speakOrder(orderNo, details, price, notes) {
+            if ('speechSynthesis' in window) {
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                }
+                window.speechSynthesis.cancel(); // 清除排隊中的語音
+
+                const volume = document.getElementById('volume').value;
+                const cleanDetails = details.replace(/\$/g, '');
+                const cleanPrice = String(price).replace(/\$/g, '');
+                
+                // 檢查備註：如果是空值、或者等於「無」，就完全不唸；有其他內容才在總金額前唸出
+                let notesText = "";
+                const cleanNotes = (notes || "").trim();
+                if (cleanNotes && cleanNotes !== "無") {
+                    notesText = `，備註：${cleanNotes}`;
+                }
+
+                const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}${notesText}。總金額為： ${cleanPrice} 元。`;
             const msg = new SpeechSynthesisUtterance(textToSpeak);
             msg.volume = Number(volume);
         msg.rate = 1.1; // 語速微調
