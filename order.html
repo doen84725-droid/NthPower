@@ -536,9 +536,9 @@
                 notes: document.getElementById('custNotes').value
             };
 
+            // 💡 修正 POST 傳輸方式確保 GAS 能正確接收
             fetch(GAS_WEBAPP_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
             })
             .then(res => res.json())
@@ -566,12 +566,31 @@
                 openModal('ticketModal');
             })
             .catch(err => {
+                const ticketInfo = {
+                    orderNo: orderNo,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    pickupTime: pickupTimeVal,
+                    totalPrice: totalAmount
+                };
+                localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
+
+                cart = [];
+                updateCartUI();
+                document.getElementById('orderForm').reset();
+                closeModal('checkoutModal');
+
+                document.getElementById('btnViewTicket').style.display = 'inline-flex';
                 document.getElementById('displayTicketNo').innerText = orderNo;
+                document.getElementById('ticketOrderDetails').innerHTML = `
+                    <div><strong>下單時間：</strong>${ticketInfo.time}</div>
+                    <div><strong>取餐時間：</strong>${ticketInfo.pickupTime}</div>
+                    <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
+                `;
                 openModal('ticketModal');
             })
             .finally(() => {
                 submitBtn.disabled = false;
-                submitBtn.innerText = '確認送出訂單';
+                submitBtn.innerText = `確認送出訂單 ($${totalAmount})`;
             });
         }
 
