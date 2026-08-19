@@ -231,7 +231,6 @@
         let pickupTimeType = 'now'; 
         let selectedPayment = '現金 (請至櫃台付現)'; 
         
-        // 已填入您剛剛部署成功的最新網頁應用程式網址
         const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4ASlfThFb0rLplP1jR80rAYhSADiDYeCRFBdG-U9Fr9uXfaJKLLIMoe4ObIHeCfH3/exec";
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -285,7 +284,6 @@
 
             let grouped = {};
             menuItems.forEach(item => {
-                // 自動避開區段標題含有「加料」或「口味」的項目，不讓它們在主畫面上長出卡片
                 const isHiddenSection = item.sectionTitle && (item.sectionTitle.includes('加料') || item.sectionTitle.includes('口味'));
 
                 if (item.status === "供應中" && !isHiddenSection) {
@@ -327,7 +325,6 @@
             }
         }
 
-        // 內部彈窗選項：讀取試算表的 flavor、temp、addons 欄位，並自動與後台庫存狀態連動
         function openDynamicOptionModal(itemObj) {
             modalQty = 1;
             document.getElementById('modalItemQty').innerText = modalQty;
@@ -339,7 +336,6 @@
 
             let html = '';
 
-            // 1. 口味選項
             if (itemObj.flavor && itemObj.flavor.trim() !== '') {
                 let rawFlavors = itemObj.flavor.split('/').map(f => f.trim());
                 let validFlavors = rawFlavors.filter(f => globalStockStatus[f] !== false && globalStockStatus[f] !== "已售完");
@@ -356,7 +352,6 @@
                 }
             }
 
-            // 2. 冷熱溫度選項
             if (itemObj.temp && itemObj.temp.trim() !== '') {
                 let rawTemps = itemObj.temp.split('/').map(t => t.trim());
                 let validTemps = rawTemps.filter(t => globalStockStatus[t] !== false && globalStockStatus[t] !== "已售完");
@@ -373,7 +368,6 @@
                 }
             }
 
-            // 3. 加料選項
             if (itemObj.addons && itemObj.addons.trim() !== '') {
                 let rawAddons = itemObj.addons.split('/').map(a => a.trim());
                 let validAddons = rawAddons.filter(a => globalStockStatus[a] !== false && globalStockStatus[a] !== "已售完");
@@ -395,14 +389,17 @@
             }
 
             modalBody.innerHTML = html;
-            autoSelectFirstChip('#flavorChips');
-            autoSelectFirstChip('#tempChips');
+            autoSelectFirstChip('#optModalBody #flavorChips');
+            autoSelectFirstChip('#optModalBody #tempChips');
             openModal('optionModal');
         }
 
         function autoSelectFirstChip(sel) {
-            const el = document.querySelector(`${sel} .chip`);
-            if (el) el.classList.add('selected');
+            const el = document.querySelector(sel);
+            if (el) {
+                const firstChip = el.querySelector('.chip');
+                if (firstChip) firstChip.classList.add('selected');
+            }
         }
 
         function selectSingleChip(el) {
@@ -423,13 +420,13 @@
             const selectedOpts = [];
             let extraPrice = 0;
 
-            const flavorChip = document.querySelector('#flavorChips .chip.selected');
+            const flavorChip = document.querySelector('#optModalBody #flavorChips .chip.selected');
             if (flavorChip) selectedOpts.push(`口味: ${flavorChip.innerText}`);
 
-            const tempChip = document.querySelector('#tempChips .chip.selected');
+            const tempChip = document.querySelector('#optModalBody #tempChips .chip.selected');
             if (tempChip) selectedOpts.push(`溫度: ${tempChip.innerText}`);
 
-            document.querySelectorAll('#addonChips .chip.selected').forEach(chip => {
+            document.querySelectorAll('#optModalBody #addonChips .chip.selected').forEach(chip => {
                 let cleanAddonName = chip.innerText.split('(')[0].trim();
                 selectedOpts.push(cleanAddonName);
                 extraPrice += 10;
@@ -583,568 +580,5 @@
         function openCartModal() { if (cart.length > 0) openModal('cartModal'); }
         function openCheckoutModal() { closeModal('cartModal'); openModal('checkoutModal'); }
     </script>
-</body>
-</html>
-  
- 
-<!-- 分類導覽列 (會依據試算表自動生成或對應) -->
-<div class="category-nav" id="dynamicCategoryNav">
-    <!-- 動態生成分類分頁 -->
-</div>
-
-<!-- 動態菜單主容器 -->
-<main class="menu-container" id="dynamic-menu-container">
-    <!-- 試算表裡的資料會自動在這裡長出區段與卡片 -->
-</main>
-
-  <div class="cart-bar">
-    <div class="cart-info" onclick="openCartModal()">
-      <div class="cart-count">已選 <span id="cartTotalQty">0</span> 杯 (點此查看明細)</div>
-      <div class="cart-total">$<span id="cartTotalPrice">0</span></div>
-    </div>
-    <button id="btnProceed" class="btn-checkout" disabled onclick="openCheckoutModal()">去結帳 ➔</button>
-  </div>
-
-  <div id="optionModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title" id="optModalTitle">客製選項</div>
-        <button class="btn-close" onclick="closeModal('optionModal')">&times;</button>
-      </div>
-      <div id="optModalBody"></div>
-      <div class="modal-qty-row">
-        <span style="font-weight:700;">數量</span>
-        <div class="qty-counter">
-          <button class="qty-btn" onclick="updateModalQty(-1)">-</button>
-          <span id="modalItemQty" style="font-weight:700; font-size:1.1rem;">1</span>
-          <button class="qty-btn" onclick="updateModalQty(1)">+</button>
-        </div>
-      </div>
-      <button class="btn-modal-submit" onclick="confirmAddToCart()">加入購物車</button>
-    </div>
-  </div>
-
-  <div id="cartModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">已選餐點明細</div>
-        <button class="btn-close" onclick="closeModal('cartModal')">&times;</button>
-      </div>
-      <div id="cartDetailsList" style="margin-bottom: 20px;"></div>
-      <button class="btn-modal-submit" onclick="closeModal('cartModal'); openCheckoutModal();">確認餐點，前往結帳</button>
-    </div>
-  </div>
-
-  <div id="checkoutModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">填寫訂購與取餐資料</div>
-        <button class="btn-close" onclick="closeModal('checkoutModal')">&times;</button>
-      </div>
-      <form id="orderForm" onsubmit="handleOrderSubmit(event)">
-        <div class="form-group">
-          <label>姓名 *</label>
-          <input type="text" id="custName" required placeholder="請輸入稱呼" />
-        </div>
-        <div class="form-group">
-          <label>聯絡電話 *</label>
-          <input type="tel" id="custPhone" required placeholder="09xx-xxx-xxx" />
-        </div>
-        <div class="form-group">
-          <label>預計取餐時間 *</label>
-          <div class="card-select-grid">
-            <div id="cardPickupNow" class="select-card selected" onclick="setPickupTimeType('now')">
-              <span class="card-main-text">⚡ 現在取餐</span>
-              <span class="card-sub-text">現場現點現做</span>
-            </div>
-            <div id="cardPickupLater" class="select-card" onclick="setPickupTimeType('later')">
-              <span class="card-main-text">🕒 稍後預約</span>
-              <span class="card-sub-text">指定時間取餐</span>
-            </div>
-          </div>
-          <input type="time" id="custTime" style="display: none; margin-top: 10px;" />
-        </div>
-        <div class="form-group">
-          <label>付款方式 *</label>
-          <div class="card-select-grid">
-            <div id="payCardCash" class="select-card selected" onclick="setPaymentMethod('現金 (請至櫃台付現)')">
-              <span class="card-main-text">💵 現金付款</span>
-              <span class="card-sub-text">請至櫃台付現</span>
-            </div>
-            <div id="payCardOnline" class="select-card" onclick="setPaymentMethod('手機支付 (請掃桌面付款碼支付並出示)')">
-              <span class="card-main-text">📱 手機支付</span>
-              <span class="card-sub-text">掃桌面付款碼出示</span>
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>備註需求</label>
-          <textarea id="custNotes" rows="2" placeholder="例如：少冰、不要吸管..."></textarea>
-        </div>
-        <button type="submit" id="btnSubmitOrder" class="btn-modal-submit">確認送出訂單 ($<span id="checkoutTotalAmount">0</span>)</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="ticketModal" class="modal-overlay">
-    <div class="modal-content success-modal">
-      <h2 style="color: var(--primary);">🎉 訂單送出成功！</h2>
-      <p style="color: #666; font-size: 14px; margin-top: 6px;">店家已收到您的訂單，正在為您精心準備。</p>
-      <div class="ticket-box">
-        <div style="font-size: 14px; font-weight: bold; color: #735753;">您的專屬取餐號碼</div>
-        <div class="ticket-number" id="displayTicketNo">#000</div>
-        <div id="ticketOrderDetails" style="font-size: 13px; color: #666; margin-top: 8px; line-height: 1.5; text-align: left; background: #fff; padding: 10px; border-radius: 8px;"></div>
-      </div>
-      <button class="btn-modal-submit" onclick="closeModal('ticketModal')">好的，我知道了</button>
-    </div>
-  </div>
-
-  <script>
-    const YOGURT_ITEMS = [
-      { id: 'y1', name: '草莓甜心', desc: '草莓 / 莓果', price: 180 },
-      { id: 'y2', name: '光芒閃閃', desc: '芒果 / 季節熱帶水果', price: 180 },
-      { id: 'y3', name: '可可旋風', desc: '巧克力 / Oreo脆片', price: 180 },
-      { id: 'y4', name: '天作芝核', desc: '芝麻 / 核桃', price: 180 },
-      { id: 'y5', name: '啡你莫屬', desc: '咖啡 / 奇亞籽', price: 180 },
-      { id: 'y6', name: '薄荷夏綠蒂', desc: '薄荷巧克力 / 黑眼豆豆', price: 180 }
-    ];
-
-    const TEA_ITEMS = [
-      { id: 't1', name: '纖體瘦瘦茶', price: 60, flavors: ['原味檸香', '覆盆子'] },
-      { id: 't2', name: '養生綠茶', price: 60, flavors: ['原味', '石榴'] },
-      { id: 't3', name: '放鬆舒活茶', price: 60, flavors: [] },
-      { id: 't4', name: '活力聰明茶', price: 60, flavors: [] }
-    ];
-
-    const ENERGY_ITEMS = [
-      { id: 'e1', name: '高蛋白咖啡', price: 90, flavors: ['拿鐵', '摩卡'], hasTemp: false },
-      { id: 'e2', name: '運動機能高蛋白飲', price: 130, flavors: [], hasTemp: false },
-      { id: 'e3', name: '蘆薈氣泡飲', price: 80, flavors: ['原味', '葡萄', '芒果'], hasTemp: false },
-      { id: 'e4', name: '強健保護飲', price: 80, flavors: ['蜂蜜香橙'], hasTemp: true }
-    ];
-
-    const GLOBAL_ADDONS = [
-      { name: '原味寒天波波', price: 10 },
-      { name: '黑糖寒天波波', price: 10 },
-      { name: '加麥片/穀片', price: 10 },
-      { name: '環保外帶瓶', price: 10 }
-    ];
-
-    let cart = [];
-    let currentCustomizingItem = null;
-    let modalQty = 1;
-    let pickupTimeType = 'now';
-    let selectedPayment = '現金 (請至櫃台付現)';
-    let stockStatus = {};
-
-    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyeQwnhmec-rHGxuZhbwf7a7mOFdmE-RmobkTxeEpO6ASf44_9BC-WrZDYB2UPka1LB/exec";
-
-    window.addEventListener('DOMContentLoaded', () => {
-      fetchStockAndRender();
-      checkSavedTicket();
-    });
-
-    function checkSavedTicket() {
-      const savedTicket = localStorage.getItem('nth_last_ticket');
-      if (savedTicket) {
-        document.getElementById('btnViewTicket').style.display = 'inline-flex';
-      }
-    }
-
-    function openTicketModal() {
-      const savedTicket = JSON.parse(localStorage.getItem('nth_last_ticket') || '{}');
-      if (savedTicket.orderNo) {
-        document.getElementById('displayTicketNo').innerText = savedTicket.orderNo;
-        document.getElementById('ticketOrderDetails').innerHTML = `
-          <div><strong>下單時間：</strong>${savedTicket.time || '剛剛'}</div>
-          <div><strong>取餐時間：</strong>${savedTicket.pickupTime || '現場即取'}</div>
-          <div><strong>總計金額：</strong>$${savedTicket.totalPrice} 元</div>
-        `;
-        openModal('ticketModal');
-      }
-    }
-
-    function fetchStockAndRender() {
-      fetch(GAS_WEBAPP_URL)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === "success" && res.data) {
-            stockStatus = res.data;
-          }
-          renderAllMenus();
-        })
-        .catch(err => renderAllMenus());
-    }
-
-    function renderAllMenus() {
-      renderYogurtItems();
-      renderTeaItems();
-      renderEnergyItems();
-    }
-
-function renderYogurtItems() {
-      const container = document.getElementById('yogurt-list');
-      // 只留下供應中的項目
-      const availableItems = YOGURT_ITEMS.filter(item => stockStatus[item.name] !== false);
-      
-      if (availableItems.length === 0) {
-        container.innerHTML = '<p style="color:#999; font-size:0.9rem; padding:10px;">目前無供應項目</p>';
-        return;
-      }
-
-      container.innerHTML = availableItems.map(item => `
-          <div class="menu-card">
-            <div class="item-info">
-              <div class="item-name">${item.name}</div>
-              <div class="item-desc">${item.desc}</div>
-              <div class="item-price">$${item.price}</div>
-            </div>
-            <button class="btn-add" onclick="openOptionModal('yogurt', '${item.id}')">加點 ＋</button>
-          </div>
-      `).join('');
-    }
-    
-function renderTeaItems() {
-      const container = document.getElementById('tea-list');
-      const availableItems = TEA_ITEMS.filter(item => stockStatus[item.name] !== false);
-      
-      container.innerHTML = availableItems.map(item => `
-          <div class="menu-card">
-            <div class="item-info">
-              <div class="item-name">${item.name}</div>
-              <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能健康茶飲'}</div>
-              <div class="item-price">$${item.price}</div>
-            </div>
-            <button class="btn-add" onclick="openOptionModal('tea', '${item.id}')">選擇 ＋</button>
-          </div>
-      `).join('');
-    }
-
-    function renderEnergyItems() {
-      const container = document.getElementById('energy-list');
-      const availableItems = ENERGY_ITEMS.filter(item => stockStatus[item.name] !== false);
-      
-      container.innerHTML = availableItems.map(item => `
-          <div class="menu-card">
-            <div class="item-info">
-              <div class="item-name">${item.name}</div>
-              <div class="item-desc">${item.flavors.length ? item.flavors.join(' / ') : '機能補給'}</div>
-              <div class="item-price">$${item.price}</div>
-            </div>
-            <button class="btn-add" onclick="openOptionModal('energy', '${item.id}')">選擇 ＋</button>
-          </div>
-      `).join('');
-    }
-
-function openOptionModal(type, itemId) {
-      modalQty = 1;
-      document.getElementById('modalItemQty').innerText = modalQty;
-      const modalBody = document.getElementById('optModalBody');
-      modalBody.innerHTML = '';
-
-      if (type === 'smoothies') {
-        currentCustomizingItem = { name: '經典果昔', basePrice: 100, type: 'smoothies' };
-        document.getElementById('optModalTitle').innerText = '經典果昔 ($100)';
-        
-        const flavors = ['香草', '草莓', '巧克力', '芒果', '咖啡', '奶香曲奇', '薄荷巧克力'];
-        // 💡 加上 filter：只留下庫存供應中的口味
-        const availableFlavors = flavors.filter(f => stockStatus[f] !== false);
-        
-        // 💡 加上 filter：只留下供應中的基底配料 (穀片 / 寒天波波)
-        const baseOptions = ['穀片', '寒天波波'].filter(b => stockStatus[b] !== false);
-
-        modalBody.innerHTML = `
-          <div class="option-group">
-            <label class="option-label">選擇口味 (必選 1 項)</label>
-            <div class="option-chips" id="flavorChips">
-              ${availableFlavors.map(f => `<button type="button" class="chip" onclick="selectSingleChip(this)">${f}</button>`).join('')}
-            </div>
-          </div>
-          <div class="option-group">
-            <label class="option-label">基底配料</label>
-            <div class="option-chips" id="baseChips">
-              ${baseOptions.map(b => `<button type="button" class="chip" onclick="selectSingleChip(this)">${b}</button>`).join('')}
-            </div>
-          </div>
-          ${renderAddonsHtml()}
-        `;
-        autoSelectFirstChip('#flavorChips');
-        autoSelectFirstChip('#baseChips');
-      } else if (type === 'yogurt') {
-        const item = YOGURT_ITEMS.find(i => i.id === itemId);
-        currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'yogurt' };
-        document.getElementById('optModalTitle').innerText = `${item.name} ($${item.price})`;
-        modalBody.innerHTML = renderAddonsHtml();
-      } else if (type === 'tea') {
-        const item = TEA_ITEMS.find(i => i.id === itemId);
-        currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'tea' };
-        document.getElementById('optModalTitle').innerText = `${item.name} ($${item.price})`;
-        
-        let html = `
-          <div class="option-group">
-            <label class="option-label">溫度</label>
-            <div class="option-chips" id="tempChips">
-              <button type="button" class="chip selected" onclick="selectSingleChip(this)">冷</button>
-              <button type="button" class="chip" onclick="selectSingleChip(this)">熱</button>
-            </div>
-          </div>
-        `;
-        if (item.flavors.length) {
-          // 💡 加上 filter：只留下供應中的茶飲口味
-          const availableTeaFlavors = item.flavors.filter(f => stockStatus[f] !== false);
-          html += `
-            <div class="option-group">
-              <label class="option-label">口味</label>
-              <div class="option-chips" id="flavorChips">
-                ${availableTeaFlavors.map(f => `<button type="button" class="chip" onclick="selectSingleChip(this)">${f}</button>`).join('')}
-              </div>
-            </div>
-          `;
-        }
-        html += renderAddonsHtml();
-        modalBody.innerHTML = html;
-        if (item.flavors.length) autoSelectFirstChip('#flavorChips');
-      } else if (type === 'energy') {
-        const item = ENERGY_ITEMS.find(i => i.id === itemId);
-        currentCustomizingItem = { name: item.name, basePrice: item.price, type: 'energy' };
-        document.getElementById('optModalTitle').innerText = `${item.name} ($${item.price})`;
-        
-        let html = '';
-        if (item.hasTemp) {
-          html += `
-            <div class="option-group">
-              <label class="option-label">溫度</label>
-              <div class="option-chips" id="tempChips">
-                <button type="button" class="chip selected" onclick="selectSingleChip(this)">冷</button>
-                <button type="button" class="chip" onclick="selectSingleChip(this)">熱</button>
-              </div>
-            </div>
-          `;
-        }
-        if (item.flavors.length) {
-          // 💡 加上 filter：只留下供應中的機能飲口味
-          const availableEnergyFlavors = item.flavors.filter(f => stockStatus[f] !== false);
-          html += `
-            <div class="option-group">
-              <label class="option-label">口味</label>
-              <div class="option-chips" id="flavorChips">
-                ${availableEnergyFlavors.map(f => `<button type="button" class="chip" onclick="selectSingleChip(this)">${f}</button>`).join('')}
-              </div>
-            </div>
-          `;
-        }
-        html += renderAddonsHtml();
-        modalBody.innerHTML = html;
-        if (item.flavors.length) autoSelectFirstChip('#flavorChips');
-      }
-
-      openModal('optionModal');
-    }
-
-    // 💡 同步修改加料區：利用 filter 過濾掉已售完的加料項目
-    function renderAddonsHtml() {
-      const availableAddons = GLOBAL_ADDONS.filter(addon => stockStatus[addon.name] !== false);
-      
-      if (availableAddons.length === 0) return '';
-
-      return `
-        <div class="option-group">
-          <label class="option-label">加料與需求 (可複選)</label>
-          <div class="option-chips" id="addonChips">
-            ${availableAddons.map(addon => `
-              <button type="button" class="chip" data-price="${addon.price}" onclick="toggleMultiChip(this)">
-                ${addon.name} (+$${addon.price})
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-    function autoSelectFirstChip(sel) {
-      const el = document.querySelector(`${sel} .chip:not([disabled])`);
-      if (el) el.classList.add('selected');
-    }
-
-    function selectSingleChip(el) {
-      if (el.disabled) return;
-      el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-    }
-
-    function toggleMultiChip(el) {
-      if (el.disabled) return;
-      el.classList.toggle('selected');
-    }
-
-    function updateModalQty(delta) {
-      modalQty = Math.max(1, modalQty + delta);
-      document.getElementById('modalItemQty').innerText = modalQty;
-    }
-
-    function confirmAddToCart() {
-      const selectedOpts = [];
-      let extraPrice = 0;
-
-      const flavorChip = document.querySelector('#flavorChips .chip.selected');
-      if (flavorChip) selectedOpts.push(`口味: ${flavorChip.innerText}`);
-
-      const baseChip = document.querySelector('#baseChips .chip.selected');
-      if (baseChip) selectedOpts.push(`配料: ${baseChip.innerText}`);
-
-      const tempChip = document.querySelector('#tempChips .chip.selected');
-      if (tempChip) selectedOpts.push(`溫度: ${tempChip.innerText}`);
-
-      document.querySelectorAll('#addonChips .chip.selected').forEach(chip => {
-        selectedOpts.push(chip.innerText.split('(')[0].trim());
-        extraPrice += parseInt(chip.getAttribute('data-price') || 0);
-      });
-
-      const singlePrice = currentCustomizingItem.basePrice + extraPrice;
-
-      cart.push({
-        id: Date.now(),
-        name: currentCustomizingItem.name,
-        options: selectedOpts.join(', '),
-        unitPrice: singlePrice,
-        qty: modalQty,
-        total: singlePrice * modalQty
-      });
-
-      closeModal('optionModal');
-      updateCartUI();
-    }
-
-function updateCartUI() {
-      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-      const totalPrice = cart.reduce((sum, item) => sum + item.total, 0);
-
-      document.getElementById('cartTotalQty').innerText = totalQty;
-      document.getElementById('cartTotalPrice').innerText = totalPrice;
-      document.getElementById('checkoutTotalAmount').innerText = totalPrice;
-      document.getElementById('btnProceed').disabled = totalQty === 0;
-
-      const listContainer = document.getElementById('cartDetailsList');
-      if (cart.length === 0) {
-        listContainer.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">購物車目前是空的</p>';
-      } else {
-        // 使用更直覺、點擊區域更大的行設計，提升手機觸控流暢度
-        listContainer.innerHTML = cart.map((item, index) => `
-          <div class="cart-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border);">
-            <div class="cart-item-info" style="flex: 1; padding-right: 10px;">
-              <div class="cart-item-title" style="font-weight: 700; font-size: 0.95rem;">${item.name} x ${item.qty}杯</div>
-              <div class="cart-item-opts" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">${item.options || '標準'}</div>
-            </div>
-            <div style="font-weight: 700; color: var(--accent); margin-right: 14px; white-space: nowrap;">$${item.total}</div>
-            <button type="button" onclick="removeFromCart(${index})" style="background: #fff0f0; color: #e53e3e; border: 1px solid #ffcccc; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✕</button>
-          </div>
-        `).join('');
-      }
-    }
-
-    function removeFromCart(index) {
-      // 加上快速刪除動畫或直接流暢切換
-      cart.splice(index, 1);
-      updateCartUI();
-      if (cart.length === 0) {
-        closeModal('cartModal');
-      }
-    }
-    function setPaymentMethod(method) {
-      selectedPayment = method;
-      const cardCash = document.getElementById('payCardCash');
-      const cardOnline = document.getElementById('payCardOnline');
-
-      if (method.includes('現金')) {
-        cardCash.classList.add('selected');
-        cardOnline.classList.remove('selected');
-      } else {
-        cardOnline.classList.add('selected');
-        cardCash.classList.remove('selected');
-      }
-    }
-
-    function generateOrderNo() {
-      const rand = Math.floor(100 + Math.random() * 900);
-      return `#${rand}`;
-    }
-
-function handleOrderSubmit(e) {
-      e.preventDefault();
-      if (cart.length === 0) return alert('請先選擇餐點！');
-
-      const submitBtn = document.getElementById('btnSubmitOrder');
-      submitBtn.disabled = true;
-      submitBtn.innerText = '訂單傳送中...';
-
-      const orderNo = generateOrderNo();
-      const orderDetailsText = cart.map((item, idx) => 
-        `${idx + 1}. ${item.name} x ${item.qty}杯 ($${item.total})\n   └ ${item.options || '無特殊需求'}`
-      ).join('\n');
-
-      const pickupTimeVal = pickupTimeType === 'now' ? '現場即取' : document.getElementById('custTime').value;
-      const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
-
-      const payload = {
-        orderNo: orderNo,
-        name: document.getElementById('custName').value,
-        phone: document.getElementById('custPhone').value,
-        pickupTime: pickupTimeVal,
-        paymentMethod: selectedPayment,
-        orderDetails: orderDetailsText,
-        totalPrice: totalAmount,
-        notes: document.getElementById('custNotes').value
-      };
-
-      fetch(GAS_WEBAPP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => {
-        // 儲存號碼牌資料
-        const ticketInfo = {
-          orderNo: orderNo,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          pickupTime: pickupTimeVal,
-          totalPrice: totalAmount
-        };
-        localStorage.setItem('nth_last_ticket', JSON.stringify(ticketInfo));
-
-        // 清空購物車
-        cart = [];
-        updateCartUI();
-        document.getElementById('orderForm').reset();
-        closeModal('checkoutModal');
-
-        // 直接彈出你設計的精美號碼牌，不再有任何礙眼的系統視窗
-        document.getElementById('btnViewTicket').style.display = 'inline-flex';
-        document.getElementById('displayTicketNo').innerText = orderNo;
-        document.getElementById('ticketOrderDetails').innerHTML = `
-          <div><strong>下單時間：</strong>${ticketInfo.time}</div>
-          <div><strong>取餐時間：</strong>${ticketInfo.pickupTime}</div>
-          <div><strong>總計金額：</strong>$${ticketInfo.totalPrice} 元</div>
-        `;
-        openModal('ticketModal');
-      })
-      .catch(err => {
-        // 即便連線有小狀況，也還是優先顯示給客人看，避免反覆彈跳訊息
-        document.getElementById('displayTicketNo').innerText = orderNo;
-        openModal('ticketModal');
-      })
-      .finally(() => {
-        submitBtn.disabled = false;
-        submitBtn.innerText = '確認送出訂單';
-      });
-    }
-
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-    function openCartModal() { if (cart.length > 0) openModal('cartModal'); }
-    function openCheckoutModal() { closeModal('cartModal'); openModal('checkoutModal'); }
-    function scrollToCategory(id) {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-    }
-  </script>
 </body>
 </html>
