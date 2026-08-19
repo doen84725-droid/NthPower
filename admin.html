@@ -273,7 +273,7 @@
             const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}。總金額為： ${cleanPrice} 元。`;
             const msg = new SpeechSynthesisUtterance(textToSpeak);
             msg.volume = Number(volume);
-        msg.rate = 1.0; // 語速微調
+        msg.rate = 1.1; // 語速微調
     
     // 💡 自動抓取裝置內可用的中文語音，優先選擇微軟或 Google 的自然語音
     const voices = window.speechSynthesis.getVoices();
@@ -292,8 +292,9 @@ if ('speechSynthesis' in window) {
     };
 }
         // 💡 響鈴加語音播報
-        function playAlertAndSpeak(orderNo, details, price) {
-            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+function playAlertAndSpeak(orderNo, details, price) {
+            // 💡 將原本的警報音效換成清脆的「叮咚」聲
+            const audio = new Audio('https://actions.google.com/sounds/v1/doorbells/doorbell_chime.ogg');
             audio.volume = document.getElementById('volume').value;
             audio.play().then(() => {
                 setTimeout(() => speakOrder(orderNo, details, price), 800);
