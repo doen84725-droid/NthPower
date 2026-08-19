@@ -170,21 +170,6 @@
             border-radius: 8px;
         }
 
-        .admin-pwd-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .admin-pwd-bar input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-        }
-
         .btn-refresh {
             background: var(--morandi-primary);
             color: #fff;
@@ -260,41 +245,16 @@
                 <h2>🌿 菜單庫存狀態管理</h2>
                 <button class="btn-refresh" onclick="loadStockAndOrders()">重新整理</button>
             </div>
-            <div class="admin-pwd-bar">
-                <input type="password" id="adminPwd" placeholder="請輸入管理密碼 (預設: 1234)" value="1234" />
-            </div>
             <div id="stock-list-container">載入中...</div>
         </div>
     </div>
 
     <script>
-        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4ASlfThFb0rLplP1jR80rAYhSADiDYeCRFBdG-U9Fr9uXfaJKLLIMoe4ObIHeCfH3/exec";
-
-        // 已將 8 種果昔口味完整補齊
-        const MENU_CATEGORIES = [
-            { 
-                title: "🥤 Smoothies 果昔口味與基底", 
-                items: ["香草", "草莓", "巧克力", "芒果", "咖啡", "奶香", "曲奇", "薄荷巧克力", "穀片", "寒天波波"] 
-            },
-            { 
-                title: "🥣 優格燕麥果昔品項", 
-                items: ["草莓甜心", "光芒閃閃", "可可旋風", "天作芝核", "啡你莫屬", "薄荷夏綠蒂"] 
-            },
-            { 
-                title: "🍵 機能茶系列與口味", 
-                items: ["纖體瘦瘦茶", "原味檸香", "覆盆子", "養生綠茶", "原味", "石榴", "放鬆舒活茶", "活力聰明茶"] 
-            },
-            { 
-                title: "⚡ 機能飲系列與口味", 
-                items: ["高蛋白咖啡", "拿鐵", "摩卡", "運動機能高蛋白飲", "蘆薈氣泡飲", "葡萄", "強健保護飲", "蜂蜜香橙"] 
-            },
-            { 
-                title: "➕ 加料加購項目", 
-                items: ["原味寒天波波", "黑糖寒天波波", "加麥片/穀片", "環保外帶瓶"] 
-            }
-        ];
+        // 對應您最新部署的 GAS 網址
+        const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw2P4nX0RZ_uB2_J7wNcZJeOQSr-jQm3SMX_0Xbsc1znFNO1bkiddSInbYLxhjDVjge/exec";
 
         let stockStatus = {};
+        let dynamicMenuData = [];
         let knownOrderTimestamps = new Set();
         let isFirstLoad = true;
 
@@ -317,9 +277,8 @@
         }
 
         function playAlertAndSpeak(orderNo, details, price) {
-            const volume = document.getElementById('volume').value;
             const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-            audio.volume = volume;
+            audio.volume = document.getElementById('volume').value;
             audio.play().then(() => {
                 setTimeout(() => speakOrder(orderNo, details, price), 800);
             }).catch(e => {
@@ -335,8 +294,11 @@
                         document.getElementById('sync-status').innerText = "🟢 正常同步中";
                         if (res.data) {
                             stockStatus = res.data;
-                            renderStockList();
                         }
+                        if (res.menu) {
+                            dynamicMenuData = res.menu;
+                        }
+                        renderStockList();
                         if (res.orders) {
                             renderOrders(res.orders);
                         }
@@ -397,44 +359,53 @@
             isFirstLoad = false;
         }
 
+        // 直接依照試算表 C 欄（dynamicMenuData）動態渲染後台庫存按鈕，絕不重複
         function renderStockList() {
             const container = document.getElementById('stock-list-container');
-            let html = "";
+            if (!dynamicMenuData || dynamicMenuData.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#735753;">目前無菜單資料或載入中...</div>';
+                return;
+            }
 
-            MENU_CATEGORIES.forEach(cat => {
-                html += `<div class="category-group"><div class="category-title">${cat.title}</div>`;
-                cat.items.forEach(item => {
-                    const isAvail = stockStatus[item] !== false;
+            let grouped = {};
+            dynamicMenuData.forEach(item => {
+                let sec = item.sectionTitle || '其他品項';
+                if (!grouped[sec]) grouped[sec] = [];
+                grouped[sec].push(item);
+            });
+
+            let html = "";
+            for (let sectionTitle in grouped) {
+                html += `<div class="category-group"><div class="category-title">${sectionTitle}</div>`;
+                
+                grouped[sectionTitle].forEach(item => {
+                    const itemName = item.name;
+                    const isAvail = stockStatus[itemName] !== false;
+
                     html += `
                         <div class="stock-row">
-                            <span>${item}</span>
-                            <button class="switch-btn ${isAvail ? 'btn-available' : 'btn-soldout'}" onclick="toggleStock('${item}', ${!isAvail})">
+                            <span>${itemName}</span>
+                            <button class="switch-btn ${isAvail ? 'btn-available' : 'btn-soldout'}" onclick="toggleStock('${itemName}', ${!isAvail})">
                                 ${isAvail ? '供應中' : '已售完'}
                             </button>
                         </div>
                     `;
                 });
                 html += `</div>`;
-            });
+            }
 
             container.innerHTML = html;
         }
 
+        // 切換庫存狀態（直接傳送，不需密碼）
         function toggleStock(itemName, newStatus) {
-            const pwd = document.getElementById('adminPwd').value.trim();
-            if (!pwd) {
-                alert("請輸入管理密碼！");
-                return;
-            }
-
             fetch(GAS_WEBAPP_URL, {
                 method: "POST",
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action: "updateStatus",
                     itemName: itemName,
-                    isAvailable: newStatus,
-                    password: pwd
+                    isAvailable: newStatus
                 })
             })
             .then(res => res.json())
