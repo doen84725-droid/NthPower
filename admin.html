@@ -306,42 +306,42 @@ if ('speechSynthesis' in window) {
     };
 }
 // 💡 使用瀏覽器內建音效合成，百分之百穩定響起「叮咚」聲
-        function playAlertAndSpeak(orderNo, details, price) {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const volume = Number(document.getElementById('volume').value);
+function playAlertAndSpeak(orderNo, details, price, notes) { // 👈 加上 notes 參數
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const volume = Number(document.getElementById('volume').value);
 
-                // 播放「叮」高音
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5 音符
-                gain1.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime);
-                gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-                osc1.connect(gain1);
-                gain1.connect(audioCtx.destination);
-                osc1.start();
-                osc1.stop(audioCtx.currentTime + 0.4);
+        // 播放「叮」高音
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5 音符
+        gain1.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start();
+        osc1.stop(audioCtx.currentTime + 0.4);
 
-                // 0.3秒後播放「咚」低音
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.3); // C5 音符
-                gain2.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime + 0.3);
-                gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-                osc2.start(audioCtx.currentTime + 0.3);
-                osc2.stop(audioCtx.currentTime + 0.8);
+        // 0.3秒後播放「咚」低音
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.3); // C5 音符
+        gain2.gain.setValueAtTime(volume * 0.5, audioCtx.currentTime + 0.3);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(audioCtx.currentTime + 0.3);
+        osc2.stop(audioCtx.currentTime + 0.8);
 
-            } catch (e) {
-                console.log("音效合成略過", e);
-            }
+    } catch (e) {
+        console.log("音效合成略過", e);
+    }
 
-            // 叮咚響完後，無縫接軌語音播報
-            setTimeout(() => speakOrder(orderNo, details, price), 900);
-        }
+    // 叮咚響完後，無縫接軌語音播報（把 notes 帶進去）
+    setTimeout(() => speakOrder(orderNo, details, price, notes), 900);
+}
 
         function loadStockAndOrders() {
             fetch(GAS_WEBAPP_URL)
