@@ -682,18 +682,17 @@
       100% { transform: scale(1); }
     }
 
-    .category-nav {
-      display: flex;
-      overflow-x: auto;
-      background: #fff;
-      padding: 10px 16px;
-      gap: 10px;
-      position: sticky;
-      top: 70px;
-      z-index: 99;
-      border-bottom: 1px solid var(--border);
-      scrollbar-width: none;
-    }
+.category-nav {
+    display: flex;
+    overflow-x: auto;
+    background: #fff;
+    padding: 10px 16px;
+    gap: 10px;
+    position: sticky;
+    top: 70px; /* 配合上方 header 的高度 */
+    z-index: 99;
+    border-bottom: 1px solid var(--border);
+}
     .category-nav::-webkit-scrollbar { display: none; }
 
     .nav-tab {
