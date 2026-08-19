@@ -265,7 +265,7 @@
             return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
         }
 
-        // 💡 語音播報功能// 💡 語音順序調整：備註會在總金額前唸出（若是「無」或空白則自動跳過）
+        // 💡 語音播報功能//
         function speakOrder(orderNo, details, price, notes) {
             if ('speechSynthesis' in window) {
                 if (window.speechSynthesis.paused) {
@@ -285,9 +285,9 @@
                 }
 
                 const textToSpeak = `號碼 ${orderNo}，新訂單！內容是： ${cleanDetails}${notesText}。總金額為： ${cleanPrice} 元。`;
-            const msg = new SpeechSynthesisUtterance(textToSpeak);
+                const msg = new SpeechSynthesisUtterance(textToSpeak);
             msg.volume = Number(volume);
-        msg.rate = 1.1; // 語速微調
+        msg.rate = 1.2; // 語速微調
     
     // 💡 自動抓取裝置內可用的中文語音，優先選擇微軟或 Google 的自然語音
     const voices = window.speechSynthesis.getVoices();
